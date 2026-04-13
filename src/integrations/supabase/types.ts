@@ -14,16 +14,191 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      job_cost_lines: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          job_cost_sheet_id: string
+          job_type: string
+          product_id: string | null
+          quantity: number
+          total_cost: number | null
+          unit_price: number
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          job_cost_sheet_id: string
+          job_type: string
+          product_id?: string | null
+          quantity?: number
+          total_cost?: number | null
+          unit_price?: number
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          job_cost_sheet_id?: string
+          job_type?: string
+          product_id?: string | null
+          quantity?: number
+          total_cost?: number | null
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_cost_lines_job_cost_sheet_id_fkey"
+            columns: ["job_cost_sheet_id"]
+            isOneToOne: false
+            referencedRelation: "job_cost_sheets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "job_cost_lines_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      job_cost_sheets: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          currency: string
+          id: string
+          name: string
+          project_id: string | null
+          state: string
+          total_planned_cost: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          id?: string
+          name?: string
+          project_id?: string | null
+          state?: string
+          total_planned_cost?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          id?: string
+          name?: string
+          project_id?: string | null
+          state?: string
+          total_planned_cost?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_cost_sheets_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      products: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          standard_price: number
+          unit_of_measure: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          standard_price?: number
+          unit_of_measure?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          standard_price?: number
+          unit_of_measure?: string
+        }
+        Relationships: []
+      }
+      projects: {
+        Row: {
+          created_at: string
+          customer_name: string | null
+          id: string
+          location: string | null
+          name: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          customer_name?: string | null
+          id?: string
+          location?: string | null
+          name: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          customer_name?: string | null
+          id?: string
+          location?: string | null
+          name?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "site_manager" | "procurement_officer" | "accountant"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +325,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "site_manager", "procurement_officer", "accountant"],
+    },
   },
 } as const
