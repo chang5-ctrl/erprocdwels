@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import loginBg from '@/assets/login-bg.jpg';
-import logo from '@/assets/logo.png';
+import { Building2 } from 'lucide-react';
 
 const Login = () => {
   const { user, loading, signIn, signUp } = useAuth();
@@ -58,8 +58,10 @@ const Login = () => {
 
       <div className="relative z-10 w-full max-w-md px-4">
         <div className="rounded-xl bg-card/95 p-8 shadow-2xl backdrop-blur-sm">
-          <div className="mb-6 flex flex-col items-center gap-3">
-            <img src={logo} alt="Rocdwels Logo" className="h-16 w-16" width={512} height={512} />
+          <div className="mb-6 text-center">
+            <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-xl bg-primary/10">
+              <Building2 className="h-10 w-10 text-primary" />
+            </div>
             <div className="text-center">
               <h1 className="text-xl font-bold text-foreground">Rocdwels Nigeria Ltd</h1>
               <p className="text-sm text-muted-foreground">Construction ERP System</p>
@@ -113,9 +115,6 @@ const Login = () => {
             </Button>
           </form>
 
-          <p className="mt-6 text-center text-xs text-muted-foreground">
-            Powered by Lovable
-          </p>
         </div>
       </div>
     </div>
