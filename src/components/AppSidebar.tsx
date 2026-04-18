@@ -28,7 +28,23 @@ export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === 'collapsed';
   const location = useLocation();
-  const { signOut, user } = useAuth();
+  const { signOut, user, hasRole } = useAuth();
+  const isAdmin = hasRole('admin');
+
+  const renderItems = (items: typeof baseMenu) => items.map((item) => (
+    <SidebarMenuItem key={item.title}>
+      <SidebarMenuButton asChild isActive={location.pathname.startsWith(item.url)}>
+        <NavLink
+          to={item.url}
+          className="text-sidebar-foreground hover:bg-sidebar-accent"
+          activeClassName="bg-sidebar-accent text-sidebar-primary font-medium"
+        >
+          <item.icon className="mr-2 h-4 w-4" />
+          {!collapsed && <span>{item.title}</span>}
+        </NavLink>
+      </SidebarMenuButton>
+    </SidebarMenuItem>
+  ));
 
   return (
     <Sidebar collapsible="icon" className="border-r-0">
@@ -38,27 +54,19 @@ export function AppSidebar() {
             Modules
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
-              {menuItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={location.pathname.startsWith(item.url)}
-                  >
-                    <NavLink
-                      to={item.url}
-                      className="text-sidebar-foreground hover:bg-sidebar-accent"
-                      activeClassName="bg-sidebar-accent text-sidebar-primary font-medium"
-                    >
-                      <item.icon className="mr-2 h-4 w-4" />
-                      {!collapsed && <span>{item.title}</span>}
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
+            <SidebarMenu>{renderItems(baseMenu)}</SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+        {isAdmin && (
+          <SidebarGroup>
+            <SidebarGroupLabel className="text-sidebar-foreground/60 text-xs uppercase tracking-wider">
+              Administration
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>{renderItems(adminMenu)}</SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
       </SidebarContent>
       <SidebarFooter className="bg-sidebar border-t border-sidebar-border p-3">
         {!collapsed && user && (
