@@ -8,13 +8,13 @@ export async function logActivity(
 ) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return;
-  await supabase.from('activity_logs').insert({
+  await supabase.from('activity_logs').insert([{
     user_id: user.id,
     entity_type,
-    entity_id: entity_id ?? null,
+    entity_id: entity_id ?? undefined,
     action,
-    details: details ?? null,
-  });
+    details: (details ?? null) as never,
+  }]);
 }
 
 export const roleLabels: Record<string, string> = {

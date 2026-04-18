@@ -64,9 +64,9 @@ export default function StaffList() {
     const { error } = await supabase.from('user_roles').insert({ user_id: userId, role: newRole });
     if (error) { toast.error(error.message); return; }
     toast.success('Role updated');
-    await supabase.from('activity_logs').insert({
-      entity_type: 'user', entity_id: userId, action: 'role_changed', details: { new_role: newRole },
-    });
+    await supabase.from('activity_logs').insert([{
+      entity_type: 'user', entity_id: userId, action: 'role_changed', details: { new_role: newRole } as never,
+    }]);
     load();
   };
 
