@@ -34,11 +34,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
+      async (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
         if (session?.user) {
           setTimeout(() => fetchRoles(session.user.id), 0);
+          if (event === 'SIGNED_IN') {
+            const userId = session.user.id;
+            setTimeout(async () => {
+              await supabase.from('login_logs').insert([{
+                user_id: userId,
+                user_agent: navigator.userAgent,
+              }]);
+              await supabase
+                .from('user_profiles')
+                .update({ last_login_at: new Date().toISOString() })
+                .eq('user_id', userId);
+            }, 0);
+          }
         } else {
           setRoles([]);
         }
