@@ -1,4 +1,4 @@
-import { Building2, FileSpreadsheet, LogOut, LayoutDashboard, Users } from 'lucide-react';
+import { Building2, FileSpreadsheet, LogOut, LayoutDashboard, Users, Truck, FileText } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -18,6 +18,8 @@ import {
 const baseMenu = [
   { title: 'Projects', url: '/projects', icon: Building2 },
   { title: 'Job Cost Sheets', url: '/job-cost-sheets', icon: FileSpreadsheet },
+  { title: 'Suppliers', url: '/suppliers', icon: Truck },
+  { title: 'Documents', url: '/documents', icon: FileText },
 ];
 const adminMenu = [
   { title: 'Dashboard', url: '/admin', icon: LayoutDashboard },

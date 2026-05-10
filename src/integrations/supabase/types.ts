@@ -44,6 +44,67 @@ export type Database = {
         }
         Relationships: []
       }
+      documents: {
+        Row: {
+          created_at: string
+          id: string
+          job_cost_sheet_id: string | null
+          mime_type: string | null
+          name: string
+          project_id: string | null
+          size_bytes: number | null
+          storage_path: string
+          supplier_id: string | null
+          uploaded_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          job_cost_sheet_id?: string | null
+          mime_type?: string | null
+          name: string
+          project_id?: string | null
+          size_bytes?: number | null
+          storage_path: string
+          supplier_id?: string | null
+          uploaded_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          job_cost_sheet_id?: string | null
+          mime_type?: string | null
+          name?: string
+          project_id?: string | null
+          size_bytes?: number | null
+          storage_path?: string
+          supplier_id?: string | null
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "documents_job_cost_sheet_id_fkey"
+            columns: ["job_cost_sheet_id"]
+            isOneToOne: false
+            referencedRelation: "job_cost_sheets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documents_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documents_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       job_cost_lines: {
         Row: {
           actual_purchased_cost: number
@@ -219,6 +280,48 @@ export type Database = {
           location?: string | null
           name?: string
           status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      suppliers: {
+        Row: {
+          address: string | null
+          created_at: string
+          created_by: string | null
+          email: string | null
+          id: string
+          is_active: boolean
+          name: string
+          notes: string | null
+          phone: string | null
+          tax_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          notes?: string | null
+          phone?: string | null
+          tax_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          tax_id?: string | null
           updated_at?: string
         }
         Relationships: []

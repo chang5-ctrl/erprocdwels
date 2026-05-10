@@ -12,6 +12,8 @@ import JobCostSheetList from "@/pages/job-cost-sheets/JobCostSheetList";
 import JobCostSheetForm from "@/pages/job-cost-sheets/JobCostSheetForm";
 import AdminDashboard from "@/pages/admin/Dashboard";
 import StaffList from "@/pages/admin/StaffList";
+import SupplierList from "@/pages/suppliers/SupplierList";
+import DocumentList from "@/pages/documents/DocumentList";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -31,6 +33,8 @@ const App = () => (
               <Route path="projects/:id" element={<ProjectForm />} />
               <Route path="job-cost-sheets" element={<JobCostSheetList />} />
               <Route path="job-cost-sheets/:id" element={<JobCostSheetForm />} />
+              <Route path="suppliers" element={<SupplierList />} />
+              <Route path="documents" element={<DocumentList />} />
               <Route path="admin" element={<AdminDashboard />} />
               <Route path="admin/staff" element={<StaffList />} />
             </Route>
