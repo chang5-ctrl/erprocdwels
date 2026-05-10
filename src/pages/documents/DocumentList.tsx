@@ -12,19 +12,14 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Upload, FileText, Download, Trash2 } from 'lucide-react';
+import { FileText, Download, Trash2, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { formatDate } from '@/lib/format';
 import type { Tables } from '@/integrations/supabase/types';
 
 type Doc = Tables<'documents'>;
-type LinkType = 'project' | 'job_cost_sheet' | 'supplier' | 'all';
-
-const labels: Record<string, string> = {
-  project: 'Project',
-  job_cost_sheet: 'Cost Sheet',
-  supplier: 'Supplier',
-};
+type LinkFilter = 'all' | 'project' | 'job_cost_sheet' | 'supplier';
+const PAGE_SIZE = 10;
 
 function formatBytes(b: number | null) {
   if (!b) return '—';
@@ -38,9 +33,15 @@ export default function DocumentList() {
   const { user, hasRole } = useAuth();
   const isAdmin = hasRole('admin');
   const fileRef = useRef<HTMLInputElement>(null);
+
   const [docs, setDocs] = useState<Doc[]>([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(0);
+  const [search, setSearch] = useState('');
+  const [debounced, setDebounced] = useState('');
+  const [filter, setFilter] = useState<LinkFilter>('all');
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<LinkType>('all');
+
   const [linkType, setLinkType] = useState<'project' | 'job_cost_sheet' | 'supplier'>('project');
   const [linkId, setLinkId] = useState<string>('');
   const [projects, setProjects] = useState<{ id: string; name: string }[]>([]);
@@ -49,15 +50,28 @@ export default function DocumentList() {
   const [uploading, setUploading] = useState(false);
   const [deleteDoc, setDeleteDoc] = useState<Doc | null>(null);
 
+  useEffect(() => {
+    const t = setTimeout(() => { setDebounced(search.trim()); setPage(0); }, 300);
+    return () => clearTimeout(t);
+  }, [search]);
+
+  useEffect(() => { setPage(0); }, [filter]);
+
   const fetchDocs = async () => {
     setLoading(true);
-    const { data } = await supabase.from('documents').select('*').order('created_at', { ascending: false });
+    let q = supabase.from('documents').select('*', { count: 'exact' });
+    if (debounced) q = q.ilike('name', `%${debounced}%`);
+    if (filter !== 'all') q = q.not(`${filter}_id`, 'is', null);
+    const from = page * PAGE_SIZE;
+    const { data, count } = await q.order('created_at', { ascending: false }).range(from, from + PAGE_SIZE - 1);
     setDocs(data ?? []);
+    setTotal(count ?? 0);
     setLoading(false);
   };
 
+  useEffect(() => { fetchDocs(); }, [debounced, filter, page]);
+
   useEffect(() => {
-    fetchDocs();
     Promise.all([
       supabase.from('projects').select('id, name').order('name'),
       supabase.from('job_cost_sheets').select('id, name').order('name'),
@@ -111,7 +125,10 @@ export default function DocumentList() {
 
   const download = async (d: Doc) => {
     const { data, error } = await supabase.storage.from('documents').createSignedUrl(d.storage_path, 60);
-    if (error || !data) { toast({ title: 'Download failed', description: error?.message, variant: 'destructive' }); return; }
+    if (error || !data) {
+      toast({ title: 'Download failed', description: error?.message, variant: 'destructive' });
+      return;
+    }
     const a = document.createElement('a');
     a.href = data.signedUrl;
     a.download = d.name;
@@ -123,9 +140,9 @@ export default function DocumentList() {
     const d = deleteDoc;
     setDeleteDoc(null);
     const { error: sErr } = await supabase.storage.from('documents').remove([d.storage_path]);
-    if (sErr) { toast({ title: 'Delete failed', description: sErr.message, variant: 'destructive' }); return; }
+    if (sErr) { toast({ title: 'File delete failed', description: sErr.message, variant: 'destructive' }); return; }
     const { error: dbErr } = await supabase.from('documents').delete().eq('id', d.id);
-    if (dbErr) { toast({ title: 'DB delete failed', description: dbErr.message, variant: 'destructive' }); return; }
+    if (dbErr) { toast({ title: 'Record delete failed', description: dbErr.message, variant: 'destructive' }); return; }
     toast({ title: 'Document deleted' });
   };
 
@@ -136,12 +153,8 @@ export default function DocumentList() {
     return '—';
   };
 
-  const visible = docs.filter(d => {
-    if (filter === 'all') return true;
-    return d[`${filter}_id` as keyof Doc] != null;
-  });
-
   const canDelete = (d: Doc) => isAdmin || d.uploaded_by === user?.id;
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   return (
     <div className="p-4 md:p-6">
@@ -188,15 +201,23 @@ export default function DocumentList() {
         {uploading && <p className="mt-2 text-xs text-muted-foreground">Uploading…</p>}
       </div>
 
-      <div className="mb-3 flex items-center gap-2">
-        <Label className="text-sm">Filter:</Label>
+      <div className="mb-3 flex flex-wrap items-center gap-3">
+        <div className="relative flex-1 min-w-[200px] max-w-sm">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            placeholder="Search file name…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-9"
+          />
+        </div>
         <Select value={filter} onValueChange={(v: any) => setFilter(v)}>
           <SelectTrigger className="w-48"><SelectValue /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All documents</SelectItem>
-            <SelectItem value="project">Projects</SelectItem>
-            <SelectItem value="job_cost_sheet">Cost Sheets</SelectItem>
-            <SelectItem value="supplier">Suppliers</SelectItem>
+            <SelectItem value="project">Projects only</SelectItem>
+            <SelectItem value="job_cost_sheet">Cost Sheets only</SelectItem>
+            <SelectItem value="supplier">Suppliers only</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -205,45 +226,60 @@ export default function DocumentList() {
         <div className="flex justify-center py-12">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
         </div>
-      ) : visible.length === 0 ? (
+      ) : docs.length === 0 ? (
         <div className="rounded-lg border bg-card p-12 text-center">
           <FileText className="mx-auto mb-3 h-12 w-12 text-muted-foreground/40" />
-          <p className="text-muted-foreground">No documents yet.</p>
+          <p className="text-muted-foreground">
+            {debounced ? `No documents match "${debounced}".` : 'No documents yet. Upload your first file above.'}
+          </p>
         </div>
       ) : (
-        <div className="rounded-lg border bg-card">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>File Name</TableHead>
-                <TableHead>Linked To</TableHead>
-                <TableHead>Size</TableHead>
-                <TableHead>Uploaded</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {visible.map(d => (
-                <TableRow key={d.id}>
-                  <TableCell className="font-medium">{d.name}</TableCell>
-                  <TableCell className="text-muted-foreground">{linkLabel(d)}</TableCell>
-                  <TableCell>{formatBytes(d.size_bytes)}</TableCell>
-                  <TableCell className="text-muted-foreground">{formatDate(d.created_at)}</TableCell>
-                  <TableCell className="text-right">
-                    <Button variant="ghost" size="icon" onClick={() => download(d)}>
-                      <Download className="h-4 w-4" />
-                    </Button>
-                    {canDelete(d) && (
-                      <Button variant="ghost" size="icon" onClick={() => setDeleteDoc(d)}>
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                      </Button>
-                    )}
-                  </TableCell>
+        <>
+          <div className="rounded-lg border bg-card">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>File Name</TableHead>
+                  <TableHead>Linked To</TableHead>
+                  <TableHead>Size</TableHead>
+                  <TableHead>Uploaded</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+              </TableHeader>
+              <TableBody>
+                {docs.map(d => (
+                  <TableRow key={d.id}>
+                    <TableCell className="font-medium">{d.name}</TableCell>
+                    <TableCell className="text-muted-foreground">{linkLabel(d)}</TableCell>
+                    <TableCell>{formatBytes(d.size_bytes)}</TableCell>
+                    <TableCell className="text-muted-foreground">{formatDate(d.created_at)}</TableCell>
+                    <TableCell className="text-right">
+                      <Button variant="ghost" size="icon" onClick={() => download(d)}>
+                        <Download className="h-4 w-4" />
+                      </Button>
+                      {canDelete(d) && (
+                        <Button variant="ghost" size="icon" onClick={() => setDeleteDoc(d)}>
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+          <div className="mt-3 flex items-center justify-between text-sm text-muted-foreground">
+            <span>{total} document{total === 1 ? '' : 's'} • Page {page + 1} of {totalPages}</span>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" disabled={page === 0} onClick={() => setPage(p => p - 1)}>
+                <ChevronLeft className="h-4 w-4" /> Previous
+              </Button>
+              <Button variant="outline" size="sm" disabled={page + 1 >= totalPages} onClick={() => setPage(p => p + 1)}>
+                Next <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </>
       )}
 
       <AlertDialog open={!!deleteDoc} onOpenChange={(o) => !o && setDeleteDoc(null)}>
@@ -251,7 +287,7 @@ export default function DocumentList() {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete document?</AlertDialogTitle>
             <AlertDialogDescription>
-              This permanently removes both the file and the database record.
+              This permanently removes both the file from storage and the database record.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
