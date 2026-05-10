@@ -7,26 +7,30 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import {
-  Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
+  Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle,
 } from '@/components/ui/dialog';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Truck, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Truck, Pencil, Trash2, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { formatDate } from '@/lib/format';
 import type { Tables } from '@/integrations/supabase/types';
 
 type Supplier = Tables<'suppliers'>;
-
+const PAGE_SIZE = 10;
 const empty = { name: '', email: '', phone: '', address: '', tax_id: '', notes: '' };
 
 export default function SupplierList() {
   const { user, hasRole } = useAuth();
   const isAdmin = hasRole('admin');
   const [rows, setRows] = useState<Supplier[]>([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(0);
+  const [search, setSearch] = useState('');
+  const [debounced, setDebounced] = useState('');
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Supplier | null>(null);
@@ -34,21 +38,34 @@ export default function SupplierList() {
   const [saving, setSaving] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
+  useEffect(() => {
+    const t = setTimeout(() => { setDebounced(search.trim()); setPage(0); }, 300);
+    return () => clearTimeout(t);
+  }, [search]);
+
   const fetch = async () => {
     setLoading(true);
-    const { data } = await supabase.from('suppliers').select('*').order('created_at', { ascending: false });
+    let q = supabase.from('suppliers').select('*', { count: 'exact' });
+    if (debounced) {
+      const s = `%${debounced}%`;
+      q = q.or(`name.ilike.${s},email.ilike.${s},phone.ilike.${s},tax_id.ilike.${s}`);
+    }
+    const from = page * PAGE_SIZE;
+    const { data, count } = await q.order('created_at', { ascending: false }).range(from, from + PAGE_SIZE - 1);
     setRows(data ?? []);
+    setTotal(count ?? 0);
     setLoading(false);
   };
 
+  useEffect(() => { fetch(); }, [debounced, page]);
+
   useEffect(() => {
-    fetch();
     const ch = supabase
       .channel('suppliers-changes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'suppliers' }, () => fetch())
       .subscribe();
     return () => { supabase.removeChannel(ch); };
-  }, []);
+  }, [debounced, page]);
 
   const openNew = () => { setEditing(null); setForm(empty); setOpen(true); };
   const openEdit = (s: Supplier) => {
@@ -61,10 +78,7 @@ export default function SupplierList() {
   };
 
   const save = async () => {
-    if (!form.name.trim()) {
-      toast({ title: 'Name required', variant: 'destructive' });
-      return;
-    }
+    if (!form.name.trim()) { toast({ title: 'Name required', variant: 'destructive' }); return; }
     setSaving(true);
     const payload = {
       name: form.name.trim(),
@@ -91,6 +105,8 @@ export default function SupplierList() {
     toast({ title: 'Supplier deleted' });
   };
 
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+
   return (
     <div className="p-4 md:p-6">
       <div className="mb-4 flex items-center justify-between">
@@ -101,6 +117,16 @@ export default function SupplierList() {
         <Button onClick={openNew}><Plus className="mr-1 h-4 w-4" /> New Supplier</Button>
       </div>
 
+      <div className="mb-3 relative max-w-sm">
+        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          placeholder="Search name, email, phone, tax ID…"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="pl-9"
+        />
+      </div>
+
       {loading ? (
         <div className="flex justify-center py-12">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
@@ -108,50 +134,65 @@ export default function SupplierList() {
       ) : rows.length === 0 ? (
         <div className="rounded-lg border bg-card p-12 text-center">
           <Truck className="mx-auto mb-3 h-12 w-12 text-muted-foreground/40" />
-          <p className="text-muted-foreground">No suppliers yet. Add your first supplier.</p>
+          <p className="text-muted-foreground">
+            {debounced ? `No suppliers match "${debounced}".` : 'No suppliers yet. Add your first supplier.'}
+          </p>
         </div>
       ) : (
-        <div className="rounded-lg border bg-card">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Phone</TableHead>
-                <TableHead>Tax ID</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Created</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {rows.map(s => (
-                <TableRow key={s.id}>
-                  <TableCell className="font-medium">{s.name}</TableCell>
-                  <TableCell>{s.email || '—'}</TableCell>
-                  <TableCell>{s.phone || '—'}</TableCell>
-                  <TableCell>{s.tax_id || '—'}</TableCell>
-                  <TableCell>
-                    <Badge variant={s.is_active ? 'default' : 'secondary'}>
-                      {s.is_active ? 'Active' : 'Inactive'}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">{formatDate(s.created_at)}</TableCell>
-                  <TableCell className="text-right">
-                    <Button variant="ghost" size="icon" onClick={() => openEdit(s)}>
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    {isAdmin && (
-                      <Button variant="ghost" size="icon" onClick={() => setDeleteId(s.id)}>
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                      </Button>
-                    )}
-                  </TableCell>
+        <>
+          <div className="rounded-lg border bg-card">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Phone</TableHead>
+                  <TableHead>Tax ID</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Created</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+              </TableHeader>
+              <TableBody>
+                {rows.map(s => (
+                  <TableRow key={s.id}>
+                    <TableCell className="font-medium">{s.name}</TableCell>
+                    <TableCell>{s.email || '—'}</TableCell>
+                    <TableCell>{s.phone || '—'}</TableCell>
+                    <TableCell>{s.tax_id || '—'}</TableCell>
+                    <TableCell>
+                      <Badge variant={s.is_active ? 'default' : 'secondary'}>
+                        {s.is_active ? 'Active' : 'Inactive'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">{formatDate(s.created_at)}</TableCell>
+                    <TableCell className="text-right">
+                      <Button variant="ghost" size="icon" onClick={() => openEdit(s)}>
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      {isAdmin && (
+                        <Button variant="ghost" size="icon" onClick={() => setDeleteId(s.id)}>
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+          <div className="mt-3 flex items-center justify-between text-sm text-muted-foreground">
+            <span>{total} supplier{total === 1 ? '' : 's'} • Page {page + 1} of {totalPages}</span>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" disabled={page === 0} onClick={() => setPage(p => p - 1)}>
+                <ChevronLeft className="h-4 w-4" /> Previous
+              </Button>
+              <Button variant="outline" size="sm" disabled={page + 1 >= totalPages} onClick={() => setPage(p => p + 1)}>
+                Next <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </>
       )}
 
       <Dialog open={open} onOpenChange={setOpen}>
