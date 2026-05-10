@@ -33,6 +33,8 @@ const App = () => (
               <Route path="projects/:id" element={<ProjectForm />} />
               <Route path="job-cost-sheets" element={<JobCostSheetList />} />
               <Route path="job-cost-sheets/:id" element={<JobCostSheetForm />} />
+              <Route path="suppliers" element={<SupplierList />} />
+              <Route path="documents" element={<DocumentList />} />
               <Route path="admin" element={<AdminDashboard />} />
               <Route path="admin/staff" element={<StaffList />} />
             </Route>
