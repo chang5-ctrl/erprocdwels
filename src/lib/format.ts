@@ -31,10 +31,12 @@ export const statusLabels: Record<string, string> = {
   active: 'Active',
   completed: 'Completed',
   on_hold: 'On Hold',
+  handover: 'Handover',
 };
 
 export const statusColors: Record<string, string> = {
   active: 'bg-emerald-100 text-emerald-800',
   completed: 'bg-muted text-muted-foreground',
   on_hold: 'bg-amber-100 text-amber-800',
+  handover: 'bg-primary/10 text-primary',
 };
