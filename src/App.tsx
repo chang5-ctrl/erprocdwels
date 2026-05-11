@@ -7,7 +7,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import AppLayout from "@/components/AppLayout";
 import Login from "@/pages/Login";
 import ProjectList from "@/pages/projects/ProjectList";
-import ProjectForm from "@/pages/projects/ProjectForm";
+import ProjectDetail from "@/pages/projects/ProjectDetail";
 import JobCostSheetList from "@/pages/job-cost-sheets/JobCostSheetList";
 import JobCostSheetForm from "@/pages/job-cost-sheets/JobCostSheetForm";
 import AdminDashboard from "@/pages/admin/Dashboard";
@@ -30,7 +30,7 @@ const App = () => (
             <Route path="/" element={<AppLayout />}>
               <Route index element={<Navigate to="/projects" replace />} />
               <Route path="projects" element={<ProjectList />} />
-              <Route path="projects/:id" element={<ProjectForm />} />
+              <Route path="projects/:id" element={<ProjectDetail />} />
               <Route path="job-cost-sheets" element={<JobCostSheetList />} />
               <Route path="job-cost-sheets/:id" element={<JobCostSheetForm />} />
               <Route path="suppliers" element={<SupplierList />} />
