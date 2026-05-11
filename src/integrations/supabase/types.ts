@@ -256,29 +256,47 @@ export type Database = {
       }
       projects: {
         Row: {
+          budget_spent: number
+          budget_total: number
           created_at: string
           customer_name: string | null
+          description: string | null
+          expected_end_date: string | null
           id: string
           location: string | null
           name: string
+          project_manager_id: string | null
+          start_date: string | null
           status: string
           updated_at: string
         }
         Insert: {
+          budget_spent?: number
+          budget_total?: number
           created_at?: string
           customer_name?: string | null
+          description?: string | null
+          expected_end_date?: string | null
           id?: string
           location?: string | null
           name: string
+          project_manager_id?: string | null
+          start_date?: string | null
           status?: string
           updated_at?: string
         }
         Update: {
+          budget_spent?: number
+          budget_total?: number
           created_at?: string
           customer_name?: string | null
+          description?: string | null
+          expected_end_date?: string | null
           id?: string
           location?: string | null
           name?: string
+          project_manager_id?: string | null
+          start_date?: string | null
           status?: string
           updated_at?: string
         }
