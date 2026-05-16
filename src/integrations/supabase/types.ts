@@ -535,6 +535,7 @@ export type Database = {
         Args: { _channel: string; _user: string }
         Returns: boolean
       }
+      start_direct_message: { Args: { _other: string }; Returns: string }
     }
     Enums: {
       app_role: "admin" | "site_manager" | "procurement_officer" | "accountant"
