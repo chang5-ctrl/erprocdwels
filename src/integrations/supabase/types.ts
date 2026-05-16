@@ -164,35 +164,62 @@ export type Database = {
       }
       job_cost_sheets: {
         Row: {
+          amount: number
+          approved_at: string | null
+          approved_by: string | null
+          category: string | null
           created_at: string
           created_by: string | null
           currency: string
+          description: string | null
           id: string
           name: string
+          notes: string | null
           project_id: string | null
+          receipt_path: string | null
+          sheet_date: string | null
           state: string
+          status: string
           total_planned_cost: number
           updated_at: string
         }
         Insert: {
+          amount?: number
+          approved_at?: string | null
+          approved_by?: string | null
+          category?: string | null
           created_at?: string
           created_by?: string | null
           currency?: string
+          description?: string | null
           id?: string
           name?: string
+          notes?: string | null
           project_id?: string | null
+          receipt_path?: string | null
+          sheet_date?: string | null
           state?: string
+          status?: string
           total_planned_cost?: number
           updated_at?: string
         }
         Update: {
+          amount?: number
+          approved_at?: string | null
+          approved_by?: string | null
+          category?: string | null
           created_at?: string
           created_by?: string | null
           currency?: string
+          description?: string | null
           id?: string
           name?: string
+          notes?: string | null
           project_id?: string | null
+          receipt_path?: string | null
+          sheet_date?: string | null
           state?: string
+          status?: string
           total_planned_cost?: number
           updated_at?: string
         }
