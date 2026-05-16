@@ -1,7 +1,10 @@
-import { Building2, FileSpreadsheet, LogOut, LayoutDashboard, Users, Truck, FileText } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Building2, FileSpreadsheet, LogOut, LayoutDashboard, Users, Truck, FileText, MessageSquare } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import { Badge } from '@/components/ui/badge';
 import {
   Sidebar,
   SidebarContent,
@@ -20,6 +23,7 @@ const baseMenu = [
   { title: 'Job Cost Sheets', url: '/job-cost-sheets', icon: FileSpreadsheet },
   { title: 'Suppliers', url: '/suppliers', icon: Truck },
   { title: 'Documents', url: '/documents', icon: FileText },
+  { title: 'Team Chat', url: '/chat', icon: MessageSquare, key: 'chat' as const },
 ];
 const adminMenu = [
   { title: 'Dashboard', url: '/admin', icon: LayoutDashboard },
@@ -32,6 +36,35 @@ export function AppSidebar() {
   const location = useLocation();
   const { signOut, user, hasRole } = useAuth();
   const isAdmin = hasRole('admin');
+  const [unread, setUnread] = useState(0);
+
+  useEffect(() => {
+    if (!user) return;
+    const refresh = async () => {
+      const { data: members } = await supabase
+        .from('chat_channel_members')
+        .select('channel_id, last_read_at')
+        .eq('user_id', user.id);
+      if (!members?.length) { setUnread(0); return; }
+      let total = 0;
+      for (const m of members) {
+        const { count } = await supabase
+          .from('chat_messages')
+          .select('id', { count: 'exact', head: true })
+          .eq('channel_id', m.channel_id)
+          .gt('created_at', m.last_read_at)
+          .neq('sender_id', user.id);
+        total += count || 0;
+      }
+      setUnread(total);
+    };
+    refresh();
+    const ch = supabase.channel('sidebar-chat-unread')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' }, refresh)
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'chat_channel_members' }, refresh)
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [user?.id, location.pathname]);
 
   const renderItems = (items: typeof baseMenu) => items.map((item) => (
     <SidebarMenuItem key={item.title}>
@@ -42,7 +75,10 @@ export function AppSidebar() {
           activeClassName="bg-sidebar-accent text-sidebar-primary font-medium"
         >
           <item.icon className="mr-2 h-4 w-4" />
-          {!collapsed && <span>{item.title}</span>}
+          {!collapsed && <span className="flex-1">{item.title}</span>}
+          {(item as any).key === 'chat' && unread > 0 && (
+            <Badge className="ml-auto h-5 min-w-5 rounded-full bg-primary px-1.5 text-[10px]">{unread}</Badge>
+          )}
         </NavLink>
       </SidebarMenuButton>
     </SidebarMenuItem>
