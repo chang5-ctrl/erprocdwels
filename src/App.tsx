@@ -15,6 +15,8 @@ import StaffList from "@/pages/admin/StaffList";
 import SupplierList from "@/pages/suppliers/SupplierList";
 import DocumentList from "@/pages/documents/DocumentList";
 import TeamChat from "@/pages/chat/TeamChat";
+import BudgetList from "@/pages/budgets/BudgetList";
+import BudgetDetail from "@/pages/budgets/BudgetDetail";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -37,6 +39,8 @@ const App = () => (
               <Route path="suppliers" element={<SupplierList />} />
               <Route path="documents" element={<DocumentList />} />
               <Route path="chat" element={<TeamChat />} />
+              <Route path="budgets" element={<BudgetList />} />
+              <Route path="budgets/:id" element={<BudgetDetail />} />
               <Route path="admin" element={<AdminDashboard />} />
               <Route path="admin/staff" element={<StaffList />} />
             </Route>
