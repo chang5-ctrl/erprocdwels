@@ -22,7 +22,7 @@ export default function BudgetList() {
     setLoading(true);
     const { data, error } = await supabase
       .from('budgets')
-      .select('*')
+      .select('*, project:projects(name), responsible:user_profiles!responsible_id(full_name)')
       .order('created_at', { ascending: false });
     console.log('Budgets fetched:', data, 'Error:', error);
     setBudgets(data || []);
@@ -98,7 +98,7 @@ export default function BudgetList() {
                   {budget.budget_number}
                 </Link>
               </TableCell>
-              <TableCell>{budget.projects?.name}</TableCell>
+              <TableCell>{budget.project?.name}</TableCell>
               <TableCell>{formatDate(budget.date_from)}</TableCell>
               <TableCell>{formatDate(budget.date_to)}</TableCell>
               <TableCell>{budget.responsible?.full_name}</TableCell>
