@@ -47,6 +47,7 @@ export default function BudgetForm({ open, onClose, onSuccess }: BudgetFormProps
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    console.log('Form submitted with values:', formData);
 
     // Generate budget number
     const { data: lastBudget } = await supabase
@@ -73,6 +74,8 @@ export default function BudgetForm({ open, onClose, onSuccess }: BudgetFormProps
         status: 'draft',
         created_by: user?.id,
       });
+
+    console.log('Supabase response:', error);
 
     if (error) {
       toast.error('Failed to create budget');
