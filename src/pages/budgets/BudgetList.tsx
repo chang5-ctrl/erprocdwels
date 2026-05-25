@@ -9,12 +9,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Plus, Wallet, Calendar, User } from 'lucide-react';
 import { formatDate, formatCurrency } from '@/lib/format';
 import { toast } from 'sonner';
+import BudgetForm from './components/BudgetForm';
 
 export default function BudgetList() {
   const { hasRole } = useAuth();
   const [budgets, setBudgets] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState('all');
+  const [showForm, setShowForm] = useState(false);
 
   const fetchBudgets = async () => {
     setLoading(true);
@@ -56,7 +58,7 @@ export default function BudgetList() {
           <Wallet className="h-8 w-8 text-primary" />
           <h1 className="text-3xl font-bold">Budgets</h1>
         </div>
-        <Button onClick={() => { /* open form */ }}>
+        <Button onClick={() => setShowForm(true)}>
           <Plus className="mr-2 h-4 w-4" />
           New Budget
         </Button>
@@ -110,6 +112,12 @@ export default function BudgetList() {
           ))}
         </TableBody>
       </Table>
+
+      <BudgetForm 
+        open={showForm} 
+        onClose={() => setShowForm(false)}
+        onSuccess={() => { setShowForm(false); fetchBudgets(); }}
+      />
     </div>
   );
 }
