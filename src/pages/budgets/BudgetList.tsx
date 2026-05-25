@@ -20,10 +20,11 @@ export default function BudgetList() {
 
   const fetchBudgets = async () => {
     setLoading(true);
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('budgets')
-      .select('*, projects(name), responsible: user_profiles!responsible_id (full_name)')
+      .select('*')
       .order('created_at', { ascending: false });
+    console.log('Budgets fetched:', data, 'Error:', error);
     setBudgets(data || []);
     setLoading(false);
   };
