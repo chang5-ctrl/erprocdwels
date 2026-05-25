@@ -66,9 +66,9 @@ export default function BudgetForm({ open, onClose, onSuccess }: BudgetFormProps
       .insert({
         budget_number: nextNumber,
         project_id: formData.project_id || null,
-        analytic_account: formData.analytic_account,
-        date_from: formData.date_from || null,
-        date_to: formData.date_to || null,
+        analytic_account: formData.name,  // Temporarily storing budget name here
+        date_from: formData.date_from ? format(new Date(formData.date_from), 'yyyy-MM-dd') : null,
+        date_to: formData.date_to ? format(new Date(formData.date_to), 'yyyy-MM-dd') : null,
         responsible_id: formData.responsible_id || null,
         status: 'draft',
         created_by: user?.id,
