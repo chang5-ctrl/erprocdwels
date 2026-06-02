@@ -1,0 +1,1 @@
+ALTER TABLE public.budgets ADD COLUMN IF NOT EXISTS currency text NOT NULL DEFAULT 'NGN';
