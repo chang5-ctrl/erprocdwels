@@ -44,6 +44,83 @@ export type Database = {
         }
         Relationships: []
       }
+      budget_lines: {
+        Row: {
+          actual_expenditure: number
+          budget_id: string
+          category: string | null
+          created_at: string
+          description: string | null
+          id: string
+          planned_amount: number
+        }
+        Insert: {
+          actual_expenditure?: number
+          budget_id: string
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          planned_amount?: number
+        }
+        Update: {
+          actual_expenditure?: number
+          budget_id?: string
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          planned_amount?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "budget_lines_budget_id_fkey"
+            columns: ["budget_id"]
+            isOneToOne: false
+            referencedRelation: "budgets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      budgets: {
+        Row: {
+          analytic_account: string | null
+          budget_number: string
+          created_at: string
+          created_by: string | null
+          date_from: string | null
+          date_to: string | null
+          id: string
+          project_id: string | null
+          responsible_id: string | null
+          status: string | null
+        }
+        Insert: {
+          analytic_account?: string | null
+          budget_number: string
+          created_at?: string
+          created_by?: string | null
+          date_from?: string | null
+          date_to?: string | null
+          id?: string
+          project_id?: string | null
+          responsible_id?: string | null
+          status?: string | null
+        }
+        Update: {
+          analytic_account?: string | null
+          budget_number?: string
+          created_at?: string
+          created_by?: string | null
+          date_from?: string | null
+          date_to?: string | null
+          id?: string
+          project_id?: string | null
+          responsible_id?: string | null
+          status?: string | null
+        }
+        Relationships: []
+      }
       chat_channel_members: {
         Row: {
           channel_id: string
@@ -196,42 +273,75 @@ export type Database = {
       job_cost_lines: {
         Row: {
           actual_purchased_cost: number
+          actual_purchased_qty: number | null
           actual_quantity: number
+          actual_requisition_qty: number | null
+          actual_vendor_bill_cost: number | null
+          actual_vendor_bill_qty: number | null
+          cost_per_unit: number | null
+          cost_price_subtotal: number | null
           created_at: string
           description: string | null
           id: string
+          invoice_subtotal: number | null
           job_cost_sheet_id: string
           job_type: string
+          planned_qty: number | null
+          product: string | null
           product_id: string | null
           quantity: number
+          tab_type: string | null
           total_cost: number | null
           unit_price: number
+          uom: string | null
         }
         Insert: {
           actual_purchased_cost?: number
+          actual_purchased_qty?: number | null
           actual_quantity?: number
+          actual_requisition_qty?: number | null
+          actual_vendor_bill_cost?: number | null
+          actual_vendor_bill_qty?: number | null
+          cost_per_unit?: number | null
+          cost_price_subtotal?: number | null
           created_at?: string
           description?: string | null
           id?: string
+          invoice_subtotal?: number | null
           job_cost_sheet_id: string
           job_type: string
+          planned_qty?: number | null
+          product?: string | null
           product_id?: string | null
           quantity?: number
+          tab_type?: string | null
           total_cost?: number | null
           unit_price?: number
+          uom?: string | null
         }
         Update: {
           actual_purchased_cost?: number
+          actual_purchased_qty?: number | null
           actual_quantity?: number
+          actual_requisition_qty?: number | null
+          actual_vendor_bill_cost?: number | null
+          actual_vendor_bill_qty?: number | null
+          cost_per_unit?: number | null
+          cost_price_subtotal?: number | null
           created_at?: string
           description?: string | null
           id?: string
+          invoice_subtotal?: number | null
           job_cost_sheet_id?: string
           job_type?: string
+          planned_qty?: number | null
+          product?: string | null
           product_id?: string | null
           quantity?: number
+          tab_type?: string | null
           total_cost?: number | null
           unit_price?: number
+          uom?: string | null
         }
         Relationships: [
           {
@@ -414,6 +524,119 @@ export type Database = {
           start_date?: string | null
           status?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      requisition_lines: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          job_cost_center_id: string | null
+          job_cost_line: string | null
+          product: string | null
+          quantity: number
+          requisition_action: string | null
+          requisition_id: string
+          total: number | null
+          unit_cost: number
+          uom: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          job_cost_center_id?: string | null
+          job_cost_line?: string | null
+          product?: string | null
+          quantity?: number
+          requisition_action?: string | null
+          requisition_id: string
+          total?: number | null
+          unit_cost?: number
+          uom?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          job_cost_center_id?: string | null
+          job_cost_line?: string | null
+          product?: string | null
+          quantity?: number
+          requisition_action?: string | null
+          requisition_id?: string
+          total?: number | null
+          unit_cost?: number
+          uom?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "requisition_lines_requisition_id_fkey"
+            columns: ["requisition_id"]
+            isOneToOne: false
+            referencedRelation: "requisitions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      requisitions: {
+        Row: {
+          analytic_account: string | null
+          created_at: string
+          created_by: string | null
+          deadline: string | null
+          department: string | null
+          employee_id: string | null
+          id: string
+          is_change_order: boolean | null
+          project_id: string | null
+          reason: string | null
+          received_date: string | null
+          requisition_date: string
+          requisition_number: string
+          requisition_type: string | null
+          responsible_id: string | null
+          status: string | null
+          task_job_order: string | null
+        }
+        Insert: {
+          analytic_account?: string | null
+          created_at?: string
+          created_by?: string | null
+          deadline?: string | null
+          department?: string | null
+          employee_id?: string | null
+          id?: string
+          is_change_order?: boolean | null
+          project_id?: string | null
+          reason?: string | null
+          received_date?: string | null
+          requisition_date?: string
+          requisition_number: string
+          requisition_type?: string | null
+          responsible_id?: string | null
+          status?: string | null
+          task_job_order?: string | null
+        }
+        Update: {
+          analytic_account?: string | null
+          created_at?: string
+          created_by?: string | null
+          deadline?: string | null
+          department?: string | null
+          employee_id?: string | null
+          id?: string
+          is_change_order?: boolean | null
+          project_id?: string | null
+          reason?: string | null
+          received_date?: string | null
+          requisition_date?: string
+          requisition_number?: string
+          requisition_type?: string | null
+          responsible_id?: string | null
+          status?: string | null
+          task_job_order?: string | null
         }
         Relationships: []
       }
