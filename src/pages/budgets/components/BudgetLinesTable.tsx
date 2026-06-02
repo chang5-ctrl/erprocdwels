@@ -61,7 +61,7 @@ export function BudgetLinesTable({ budgetId, readOnly, onChange }: Props) {
     const value = line[field];
     const { error } = await supabase
       .from('budget_lines')
-      .update({ [field]: value })
+      .update({ [field]: value } as any)
       .eq('id', line.id);
     if (error) toast.error(error.message);
     else onChange?.();
