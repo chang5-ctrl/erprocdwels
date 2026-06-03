@@ -49,7 +49,7 @@ export default function ProjectList() {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'projects' }, () => fetchProjects())
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, []);
+  }, [caps.viewAllProjects, user?.id]);
 
   const filtered = useMemo(
     () => filter === 'all' ? projects : projects.filter(p => p.status === filter),
