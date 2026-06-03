@@ -5,6 +5,7 @@ import { useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Badge } from '@/components/ui/badge';
+import { modulesFor, type ModuleKey } from '@/lib/permissions';
 import {
   Sidebar,
   SidebarContent,
@@ -18,17 +19,19 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar';
 
-const baseMenu = [
-  { title: 'Projects', url: '/projects', icon: Building2 },
-  { title: 'Job Cost Sheets', url: '/job-cost-sheets', icon: FileSpreadsheet },
-  { title: 'Budgets', url: '/budgets', icon: Wallet },
-  { title: 'Suppliers', url: '/suppliers', icon: Truck },
-  { title: 'Documents', url: '/documents', icon: FileText },
-  { title: 'Team Chat', url: '/chat', icon: MessageSquare, key: 'chat' as const },
+type MenuItem = { title: string; url: string; icon: typeof Building2; module: ModuleKey; key?: 'chat' };
+
+const baseMenu: MenuItem[] = [
+  { title: 'Projects', url: '/projects', icon: Building2, module: 'projects' },
+  { title: 'Job Cost Sheets', url: '/job-cost-sheets', icon: FileSpreadsheet, module: 'job-cost-sheets' },
+  { title: 'Budgets', url: '/budgets', icon: Wallet, module: 'budgets' },
+  { title: 'Suppliers', url: '/suppliers', icon: Truck, module: 'suppliers' },
+  { title: 'Documents', url: '/documents', icon: FileText, module: 'documents' },
+  { title: 'Team Chat', url: '/chat', icon: MessageSquare, module: 'chat', key: 'chat' },
 ];
-const adminMenu = [
-  { title: 'Dashboard', url: '/admin', icon: LayoutDashboard },
-  { title: 'Staff', url: '/admin/staff', icon: Users },
+const adminMenu: MenuItem[] = [
+  { title: 'Dashboard', url: '/admin', icon: LayoutDashboard, module: 'dashboard' },
+  { title: 'Staff', url: '/admin/staff', icon: Users, module: 'staff' },
 ];
 
 export function AppSidebar() {
