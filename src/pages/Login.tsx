@@ -9,7 +9,7 @@ import loginBg from '@/assets/login-bg.jpg';
 import { Building2 } from 'lucide-react';
 
 const Login = () => {
-  const { user, loading, signIn, signUp } = useAuth();
+  const { user, loading, signIn, signUp, roles } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -23,7 +23,14 @@ const Login = () => {
     );
   }
 
-  if (user) return <Navigate to="/projects" replace />;
+  if (user) {
+    const dest = roles.includes('admin')
+      ? '/admin'
+      : roles.includes('procurement_officer') && !roles.some(r => r !== 'procurement_officer')
+        ? '/suppliers'
+        : '/projects';
+    return <Navigate to={dest} replace />;
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

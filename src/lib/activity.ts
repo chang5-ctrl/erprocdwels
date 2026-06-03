@@ -19,6 +19,7 @@ export async function logActivity(
 
 export const roleLabels: Record<string, string> = {
   admin: 'Admin',
+  project_manager: 'Project Manager',
   site_manager: 'Site Manager',
   procurement_officer: 'Procurement Officer',
   accountant: 'Accountant',
@@ -26,6 +27,7 @@ export const roleLabels: Record<string, string> = {
 
 export const roleColors: Record<string, string> = {
   admin: 'bg-primary/10 text-primary',
+  project_manager: 'bg-purple-100 text-purple-800',
   site_manager: 'bg-blue-100 text-blue-800',
   procurement_officer: 'bg-amber-100 text-amber-800',
   accountant: 'bg-emerald-100 text-emerald-800',
