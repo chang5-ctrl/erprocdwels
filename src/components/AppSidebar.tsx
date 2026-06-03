@@ -38,8 +38,10 @@ export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === 'collapsed';
   const location = useLocation();
-  const { signOut, user, hasRole } = useAuth();
-  const isAdmin = hasRole('admin');
+  const { signOut, user, roles } = useAuth();
+  const allowed = modulesFor(roles);
+  const visibleBase = baseMenu.filter(m => allowed.has(m.module));
+  const visibleAdmin = adminMenu.filter(m => allowed.has(m.module));
   const [unread, setUnread] = useState(0);
 
   useEffect(() => {
@@ -70,7 +72,7 @@ export function AppSidebar() {
     return () => { supabase.removeChannel(ch); };
   }, [user?.id, location.pathname]);
 
-  const renderItems = (items: typeof baseMenu) => items.map((item) => (
+  const renderItems = (items: MenuItem[]) => items.map((item) => (
     <SidebarMenuItem key={item.title}>
       <SidebarMenuButton asChild isActive={location.pathname.startsWith(item.url)}>
         <NavLink
@@ -80,7 +82,7 @@ export function AppSidebar() {
         >
           <item.icon className="mr-2 h-4 w-4" />
           {!collapsed && <span className="flex-1">{item.title}</span>}
-          {(item as any).key === 'chat' && unread > 0 && (
+          {item.key === 'chat' && unread > 0 && (
             <Badge className="ml-auto h-5 min-w-5 rounded-full bg-primary px-1.5 text-[10px]">{unread}</Badge>
           )}
         </NavLink>
@@ -91,21 +93,23 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon" className="border-r-0">
       <SidebarContent className="bg-sidebar">
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-sidebar-foreground/60 text-xs uppercase tracking-wider">
-            Modules
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>{renderItems(baseMenu)}</SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-        {isAdmin && (
+        {visibleBase.length > 0 && (
+          <SidebarGroup>
+            <SidebarGroupLabel className="text-sidebar-foreground/60 text-xs uppercase tracking-wider">
+              Modules
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>{renderItems(visibleBase)}</SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
+        {visibleAdmin.length > 0 && (
           <SidebarGroup>
             <SidebarGroupLabel className="text-sidebar-foreground/60 text-xs uppercase tracking-wider">
               Administration
             </SidebarGroupLabel>
             <SidebarGroupContent>
-              <SidebarMenu>{renderItems(adminMenu)}</SidebarMenu>
+              <SidebarMenu>{renderItems(visibleAdmin)}</SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
         )}
