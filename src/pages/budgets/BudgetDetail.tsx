@@ -130,7 +130,7 @@ export default function BudgetDetail() {
         {budget.status === 'draft' && (
           <Button onClick={() => handleStatusChange('confirmed')} disabled={saving}>Confirm Budget</Button>
         )}
-        {budget.status === 'confirmed' && hasRole('admin') && (
+        {budget.status === 'confirmed' && (hasRole('admin') || hasRole('accountant')) && (
           <Button onClick={() => handleStatusChange('approved')} disabled={saving}>Approve Budget</Button>
         )}
       </div>
