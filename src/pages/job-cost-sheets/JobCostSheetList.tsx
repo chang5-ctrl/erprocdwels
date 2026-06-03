@@ -123,7 +123,7 @@ export default function JobCostSheetList() {
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Amount</TableHead>
                 <TableHead>Date</TableHead>
-                {hasRole('admin') && <TableHead className="w-40 text-right">Actions</TableHead>}
+                {caps.approveCostSheet && <TableHead className="w-40 text-right">Actions</TableHead>}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -143,7 +143,7 @@ export default function JobCostSheetList() {
                   </TableCell>
                   <TableCell className="text-right font-mono">{formatCurrency(Number(s.amount || s.total_planned_cost || 0))}</TableCell>
                   <TableCell className="text-muted-foreground">{formatDate(s.sheet_date || s.created_at)}</TableCell>
-                  {hasRole('admin') && (
+                  {caps.approveCostSheet && (
                     <TableCell className="text-right">
                       {s.status === 'pending' && (
                         <div className="flex justify-end gap-1">
