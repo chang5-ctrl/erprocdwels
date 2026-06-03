@@ -764,7 +764,12 @@ export type Database = {
       start_direct_message: { Args: { _other: string }; Returns: string }
     }
     Enums: {
-      app_role: "admin" | "site_manager" | "procurement_officer" | "accountant"
+      app_role:
+        | "admin"
+        | "site_manager"
+        | "procurement_officer"
+        | "accountant"
+        | "project_manager"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -892,7 +897,13 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "site_manager", "procurement_officer", "accountant"],
+      app_role: [
+        "admin",
+        "site_manager",
+        "procurement_officer",
+        "accountant",
+        "project_manager",
+      ],
     },
   },
 } as const
