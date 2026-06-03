@@ -84,9 +84,11 @@ export default function JobCostSheetList() {
           <FileSpreadsheet className="h-6 w-6 text-primary" />
           <h1 className="text-2xl font-bold text-foreground">Job Cost Sheets</h1>
         </div>
-        <Button onClick={() => setDialogOpen(true)}>
-          <Plus className="mr-1 h-4 w-4" /> New Cost Sheet
-        </Button>
+        {caps.createCostSheet && (
+          <Button onClick={() => setDialogOpen(true)}>
+            <Plus className="mr-1 h-4 w-4" /> New Cost Sheet
+          </Button>
+        )}
       </div>
 
       <div className="mb-4 grid gap-3 sm:grid-cols-3">
