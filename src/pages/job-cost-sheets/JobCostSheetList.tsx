@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Plus, FileSpreadsheet, Wallet, Clock, Check, X } from 'lucide-react';
 import { formatDate, formatCurrency, approvalLabels, approvalColors } from '@/lib/format';
 import { logActivity } from '@/lib/activity';
+import { capabilitiesFor } from '@/lib/permissions';
 import { toast } from 'sonner';
 import JobCostSheetDialog from './JobCostSheetDialog';
 
@@ -27,7 +28,8 @@ interface Sheet {
 const CATEGORIES = ['all', 'materials', 'labour', 'equipment', 'overhead'];
 
 export default function JobCostSheetList() {
-  const { hasRole } = useAuth();
+  const { roles } = useAuth();
+  const caps = useMemo(() => capabilitiesFor(roles), [roles]);
   const [sheets, setSheets] = useState<Sheet[]>([]);
   const [loading, setLoading] = useState(true);
   const [category, setCategory] = useState('all');
