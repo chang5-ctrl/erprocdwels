@@ -26,7 +26,7 @@ interface StaffRow {
   role: AppRole | null;
 }
 
-const ROLES: AppRole[] = ['admin', 'site_manager', 'procurement_officer', 'accountant'];
+const ROLES: AppRole[] = ['admin', 'project_manager', 'site_manager', 'procurement_officer', 'accountant'];
 
 export default function StaffList() {
   const { hasRole, loading: authLoading } = useAuth();
