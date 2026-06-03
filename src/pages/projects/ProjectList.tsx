@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { capabilitiesFor } from '@/lib/permissions';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -22,6 +24,8 @@ function progressColor(pct: number) {
 }
 
 export default function ProjectList() {
+  const { user, roles } = useAuth();
+  const caps = useMemo(() => capabilitiesFor(roles), [roles]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<StatusTab>('all');
@@ -29,7 +33,11 @@ export default function ProjectList() {
 
   const fetchProjects = async () => {
     setLoading(true);
-    const { data } = await supabase.from('projects').select('*').order('created_at', { ascending: false });
+    let q = supabase.from('projects').select('*').order('created_at', { ascending: false });
+    if (!caps.viewAllProjects && user) {
+      q = q.eq('project_manager_id', user.id);
+    }
+    const { data } = await q;
     setProjects(data ?? []);
     setLoading(false);
   };
@@ -55,7 +63,9 @@ export default function ProjectList() {
           <Building2 className="h-6 w-6 text-primary" />
           <h1 className="text-2xl font-bold text-foreground">Projects</h1>
         </div>
-        <Button onClick={() => setDialogOpen(true)}><Plus className="mr-1 h-4 w-4" /> New Project</Button>
+        {caps.createProject && (
+          <Button onClick={() => setDialogOpen(true)}><Plus className="mr-1 h-4 w-4" /> New Project</Button>
+        )}
       </div>
 
       <div className="mb-4 flex flex-wrap gap-2 border-b">
