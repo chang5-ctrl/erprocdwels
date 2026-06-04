@@ -46,6 +46,7 @@ export function AppSidebar() {
   const { signOut, user, roles } = useAuth();
   const allowed = modulesFor(roles);
   const visibleBase = baseMenu.filter(m => allowed.has(m.module));
+  const visibleOps = operationsMenu.filter(m => allowed.has(m.module));
   const visibleAdmin = adminMenu.filter(m => allowed.has(m.module));
   const [unread, setUnread] = useState(0);
 
