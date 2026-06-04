@@ -212,6 +212,80 @@ export type Database = {
           },
         ]
       }
+      daily_site_reports: {
+        Row: {
+          acknowledged_at: string | null
+          acknowledged_by: string | null
+          created_at: string
+          created_by: string | null
+          dsr_number: string
+          id: string
+          project_id: string | null
+          report_date: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          site_manager_id: string | null
+          status: string
+          tomorrow_materials: string | null
+          tomorrow_plan: string | null
+          tomorrow_special: string | null
+          tomorrow_workforce: number | null
+          updated_at: string
+          weather: string | null
+          work_status: string | null
+        }
+        Insert: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          dsr_number?: string
+          id?: string
+          project_id?: string | null
+          report_date?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          site_manager_id?: string | null
+          status?: string
+          tomorrow_materials?: string | null
+          tomorrow_plan?: string | null
+          tomorrow_special?: string | null
+          tomorrow_workforce?: number | null
+          updated_at?: string
+          weather?: string | null
+          work_status?: string | null
+        }
+        Update: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          dsr_number?: string
+          id?: string
+          project_id?: string | null
+          report_date?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          site_manager_id?: string | null
+          status?: string
+          tomorrow_materials?: string | null
+          tomorrow_plan?: string | null
+          tomorrow_special?: string | null
+          tomorrow_workforce?: number | null
+          updated_at?: string
+          weather?: string | null
+          work_status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_site_reports_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       documents: {
         Row: {
           created_at: string
@@ -269,6 +343,261 @@ export type Database = {
             columns: ["supplier_id"]
             isOneToOne: false
             referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dsr_equipment: {
+        Row: {
+          condition: string | null
+          created_at: string
+          dsr_id: string
+          equipment_name: string | null
+          equipment_type: string | null
+          hours_used: number | null
+          id: string
+          notes: string | null
+          operator: string | null
+        }
+        Insert: {
+          condition?: string | null
+          created_at?: string
+          dsr_id: string
+          equipment_name?: string | null
+          equipment_type?: string | null
+          hours_used?: number | null
+          id?: string
+          notes?: string | null
+          operator?: string | null
+        }
+        Update: {
+          condition?: string | null
+          created_at?: string
+          dsr_id?: string
+          equipment_name?: string | null
+          equipment_type?: string | null
+          hours_used?: number | null
+          id?: string
+          notes?: string | null
+          operator?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dsr_equipment_dsr_id_fkey"
+            columns: ["dsr_id"]
+            isOneToOne: false
+            referencedRelation: "daily_site_reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dsr_issues: {
+        Row: {
+          action_required: string | null
+          created_at: string
+          description: string | null
+          dsr_id: string
+          id: string
+          issue_type: string | null
+          priority: string | null
+          responsible_person: string | null
+          target_resolution_date: string | null
+        }
+        Insert: {
+          action_required?: string | null
+          created_at?: string
+          description?: string | null
+          dsr_id: string
+          id?: string
+          issue_type?: string | null
+          priority?: string | null
+          responsible_person?: string | null
+          target_resolution_date?: string | null
+        }
+        Update: {
+          action_required?: string | null
+          created_at?: string
+          description?: string | null
+          dsr_id?: string
+          id?: string
+          issue_type?: string | null
+          priority?: string | null
+          responsible_person?: string | null
+          target_resolution_date?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dsr_issues_dsr_id_fkey"
+            columns: ["dsr_id"]
+            isOneToOne: false
+            referencedRelation: "daily_site_reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dsr_materials: {
+        Row: {
+          created_at: string
+          dsr_id: string
+          id: string
+          material: string | null
+          notes: string | null
+          quantity_used: number | null
+          remaining_on_site: number | null
+          uom: string | null
+        }
+        Insert: {
+          created_at?: string
+          dsr_id: string
+          id?: string
+          material?: string | null
+          notes?: string | null
+          quantity_used?: number | null
+          remaining_on_site?: number | null
+          uom?: string | null
+        }
+        Update: {
+          created_at?: string
+          dsr_id?: string
+          id?: string
+          material?: string | null
+          notes?: string | null
+          quantity_used?: number | null
+          remaining_on_site?: number | null
+          uom?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dsr_materials_dsr_id_fkey"
+            columns: ["dsr_id"]
+            isOneToOne: false
+            referencedRelation: "daily_site_reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dsr_visitors: {
+        Row: {
+          created_at: string
+          dsr_id: string
+          id: string
+          notes: string | null
+          organisation: string | null
+          purpose: string | null
+          time_in: string | null
+          time_out: string | null
+          visitor_name: string | null
+        }
+        Insert: {
+          created_at?: string
+          dsr_id: string
+          id?: string
+          notes?: string | null
+          organisation?: string | null
+          purpose?: string | null
+          time_in?: string | null
+          time_out?: string | null
+          visitor_name?: string | null
+        }
+        Update: {
+          created_at?: string
+          dsr_id?: string
+          id?: string
+          notes?: string | null
+          organisation?: string | null
+          purpose?: string | null
+          time_in?: string | null
+          time_out?: string | null
+          visitor_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dsr_visitors_dsr_id_fkey"
+            columns: ["dsr_id"]
+            isOneToOne: false
+            referencedRelation: "daily_site_reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dsr_work: {
+        Row: {
+          activity: string | null
+          created_at: string
+          dsr_id: string
+          id: string
+          location: string | null
+          notes: string | null
+          pct_complete: number | null
+          quantity: number | null
+          uom: string | null
+        }
+        Insert: {
+          activity?: string | null
+          created_at?: string
+          dsr_id: string
+          id?: string
+          location?: string | null
+          notes?: string | null
+          pct_complete?: number | null
+          quantity?: number | null
+          uom?: string | null
+        }
+        Update: {
+          activity?: string | null
+          created_at?: string
+          dsr_id?: string
+          id?: string
+          location?: string | null
+          notes?: string | null
+          pct_complete?: number | null
+          quantity?: number | null
+          uom?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dsr_work_dsr_id_fkey"
+            columns: ["dsr_id"]
+            isOneToOne: false
+            referencedRelation: "daily_site_reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dsr_workforce: {
+        Row: {
+          created_at: string
+          dsr_id: string
+          hours_worked: number | null
+          id: string
+          notes: string | null
+          trade: string | null
+          worker_name: string | null
+        }
+        Insert: {
+          created_at?: string
+          dsr_id: string
+          hours_worked?: number | null
+          id?: string
+          notes?: string | null
+          trade?: string | null
+          worker_name?: string | null
+        }
+        Update: {
+          created_at?: string
+          dsr_id?: string
+          hours_worked?: number | null
+          id?: string
+          notes?: string | null
+          trade?: string | null
+          worker_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dsr_workforce_dsr_id_fkey"
+            columns: ["dsr_id"]
+            isOneToOne: false
+            referencedRelation: "daily_site_reports"
             referencedColumns: ["id"]
           },
         ]
@@ -457,6 +786,118 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      milestone_tasks: {
+        Row: {
+          assigned_to: string | null
+          created_at: string
+          due_date: string | null
+          id: string
+          milestone_id: string
+          name: string
+          status: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          created_at?: string
+          due_date?: string | null
+          id?: string
+          milestone_id: string
+          name: string
+          status?: string
+        }
+        Update: {
+          assigned_to?: string | null
+          created_at?: string
+          due_date?: string | null
+          id?: string
+          milestone_id?: string
+          name?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "milestone_tasks_milestone_id_fkey"
+            columns: ["milestone_id"]
+            isOneToOne: false
+            referencedRelation: "milestones"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      milestones: {
+        Row: {
+          actual_cost: number | null
+          actual_end: string | null
+          actual_start: string | null
+          budget_allocated: number | null
+          created_at: string
+          created_by: string | null
+          dependencies: Json | null
+          description: string | null
+          id: string
+          milestone_type: string | null
+          name: string
+          notes: string | null
+          pct_complete: number
+          planned_end: string | null
+          planned_start: string | null
+          project_id: string | null
+          responsible_id: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          actual_cost?: number | null
+          actual_end?: string | null
+          actual_start?: string | null
+          budget_allocated?: number | null
+          created_at?: string
+          created_by?: string | null
+          dependencies?: Json | null
+          description?: string | null
+          id?: string
+          milestone_type?: string | null
+          name: string
+          notes?: string | null
+          pct_complete?: number
+          planned_end?: string | null
+          planned_start?: string | null
+          project_id?: string | null
+          responsible_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          actual_cost?: number | null
+          actual_end?: string | null
+          actual_start?: string | null
+          budget_allocated?: number | null
+          created_at?: string
+          created_by?: string | null
+          dependencies?: Json | null
+          description?: string | null
+          id?: string
+          milestone_type?: string | null
+          name?: string
+          notes?: string | null
+          pct_complete?: number
+          planned_end?: string | null
+          planned_start?: string | null
+          project_id?: string | null
+          responsible_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "milestones_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       products: {
         Row: {
@@ -744,6 +1185,169 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      variation_order_lines: {
+        Row: {
+          amount: number | null
+          created_at: string
+          description: string | null
+          id: string
+          item: string | null
+          quantity: number | null
+          unit_rate: number | null
+          uom: string | null
+          vo_id: string
+        }
+        Insert: {
+          amount?: number | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          item?: string | null
+          quantity?: number | null
+          unit_rate?: number | null
+          uom?: string | null
+          vo_id: string
+        }
+        Update: {
+          amount?: number | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          item?: string | null
+          quantity?: number | null
+          unit_rate?: number | null
+          uom?: string | null
+          vo_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "variation_order_lines_vo_id_fkey"
+            columns: ["vo_id"]
+            isOneToOne: false
+            referencedRelation: "variation_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      variation_orders: {
+        Row: {
+          additional_days: number | null
+          admin_at: string | null
+          admin_by: string | null
+          admin_status: string | null
+          client_at: string | null
+          client_by: string | null
+          client_status: string | null
+          created_at: string
+          created_by: string | null
+          date_requested: string
+          description: string | null
+          drawing_refs: string | null
+          id: string
+          impact: string | null
+          is_change_order: boolean | null
+          justification: string | null
+          priority: string | null
+          project_id: string | null
+          project_manager_at: string | null
+          project_manager_by: string | null
+          project_manager_review: string | null
+          reason: string | null
+          requested_by: string | null
+          revised_completion_date: string | null
+          site_manager_at: string | null
+          site_manager_by: string | null
+          site_manager_recommendation: string | null
+          spec_refs: string | null
+          status: string
+          title: string
+          updated_at: string
+          variation_type: string | null
+          vat_pct: number | null
+          vo_number: string
+        }
+        Insert: {
+          additional_days?: number | null
+          admin_at?: string | null
+          admin_by?: string | null
+          admin_status?: string | null
+          client_at?: string | null
+          client_by?: string | null
+          client_status?: string | null
+          created_at?: string
+          created_by?: string | null
+          date_requested?: string
+          description?: string | null
+          drawing_refs?: string | null
+          id?: string
+          impact?: string | null
+          is_change_order?: boolean | null
+          justification?: string | null
+          priority?: string | null
+          project_id?: string | null
+          project_manager_at?: string | null
+          project_manager_by?: string | null
+          project_manager_review?: string | null
+          reason?: string | null
+          requested_by?: string | null
+          revised_completion_date?: string | null
+          site_manager_at?: string | null
+          site_manager_by?: string | null
+          site_manager_recommendation?: string | null
+          spec_refs?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+          variation_type?: string | null
+          vat_pct?: number | null
+          vo_number?: string
+        }
+        Update: {
+          additional_days?: number | null
+          admin_at?: string | null
+          admin_by?: string | null
+          admin_status?: string | null
+          client_at?: string | null
+          client_by?: string | null
+          client_status?: string | null
+          created_at?: string
+          created_by?: string | null
+          date_requested?: string
+          description?: string | null
+          drawing_refs?: string | null
+          id?: string
+          impact?: string | null
+          is_change_order?: boolean | null
+          justification?: string | null
+          priority?: string | null
+          project_id?: string | null
+          project_manager_at?: string | null
+          project_manager_by?: string | null
+          project_manager_review?: string | null
+          reason?: string | null
+          requested_by?: string | null
+          revised_completion_date?: string | null
+          site_manager_at?: string | null
+          site_manager_by?: string | null
+          site_manager_recommendation?: string | null
+          spec_refs?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+          variation_type?: string | null
+          vat_pct?: number | null
+          vo_number?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "variation_orders_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

@@ -6,7 +6,9 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Building2, FileText, Users, Wallet } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import MilestoneList from '@/pages/milestones/MilestoneList';
+import { ArrowLeft, Building2, FileText, Users, Wallet, Flag } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatCurrency, formatDate, statusColors, statusLabels, stateLabels, stateColors } from '@/lib/format';
 import { cn } from '@/lib/utils';
@@ -115,79 +117,92 @@ export default function ProjectDetail() {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <div className="flex items-center gap-2"><Wallet className="h-5 w-5 text-primary" /><CardTitle>Budget vs Spent</CardTitle></div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid gap-4 sm:grid-cols-3">
-            <div className="rounded-lg border p-4"><div className="text-xs text-muted-foreground">Contract Value</div><div className="text-xl font-semibold">{formatCurrency(total)}</div></div>
-            <div className="rounded-lg border p-4"><div className="text-xs text-muted-foreground">Spent</div><div className="text-xl font-semibold">{formatCurrency(spent)}</div></div>
-            <div className="rounded-lg border p-4"><div className="text-xs text-muted-foreground">Remaining</div><div className={cn('text-xl font-semibold', remaining < 0 && 'text-destructive')}>{formatCurrency(remaining)}</div></div>
+      <Tabs defaultValue="overview">
+        <TabsList>
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="milestones"><Flag className="mr-1 h-3 w-3" />Milestones</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="overview" className="space-y-6 mt-4">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-2"><Wallet className="h-5 w-5 text-primary" /><CardTitle>Budget vs Spent</CardTitle></div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid gap-4 sm:grid-cols-3">
+                <div className="rounded-lg border p-4"><div className="text-xs text-muted-foreground">Contract Value</div><div className="text-xl font-semibold">{formatCurrency(total)}</div></div>
+                <div className="rounded-lg border p-4"><div className="text-xs text-muted-foreground">Spent</div><div className="text-xl font-semibold">{formatCurrency(spent)}</div></div>
+                <div className="rounded-lg border p-4"><div className="text-xs text-muted-foreground">Remaining</div><div className={cn('text-xl font-semibold', remaining < 0 && 'text-destructive')}>{formatCurrency(remaining)}</div></div>
+              </div>
+              {total > 0 && (
+                <div className="space-y-1">
+                  <Progress value={pct} className={cn('h-3', progressColor(pct))} />
+                  <div className="flex justify-between text-xs text-muted-foreground"><span>{pct.toFixed(1)}% used</span><span>{(100 - pct).toFixed(1)}% left</span></div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <div className="grid gap-6 lg:grid-cols-2">
+            <Card>
+              <CardHeader>
+                <div className="flex items-center gap-2"><FileText className="h-5 w-5 text-primary" /><CardTitle>Job Cost Sheets ({sheets.length})</CardTitle></div>
+              </CardHeader>
+              <CardContent>
+                {sheets.length === 0 ? <p className="text-sm text-muted-foreground">No cost sheets linked.</p> : (
+                  <ul className="space-y-2">
+                    {sheets.map(s => (
+                      <li key={s.id} className="flex items-center justify-between rounded border p-3">
+                        <Link to={`/job-cost-sheets/${s.id}`} className="font-medium text-primary hover:underline">{s.name}</Link>
+                        <div className="flex items-center gap-2 text-sm">
+                          <span>{formatCurrency(Number(s.total_planned_cost ?? 0))}</span>
+                          <Badge variant="secondary" className={stateColors[s.state]}>{stateLabels[s.state] || s.state}</Badge>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <div className="flex items-center gap-2"><FileText className="h-5 w-5 text-primary" /><CardTitle>Documents ({docs.length})</CardTitle></div>
+              </CardHeader>
+              <CardContent>
+                {docs.length === 0 ? <p className="text-sm text-muted-foreground">No documents linked.</p> : (
+                  <ul className="space-y-2">
+                    {docs.map(d => (
+                      <li key={d.id} className="flex items-center justify-between rounded border p-3">
+                        <span className="truncate font-medium">{d.name}</span>
+                        <span className="text-xs text-muted-foreground">{formatDate(d.created_at)}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </CardContent>
+            </Card>
           </div>
-          {total > 0 && (
-            <div className="space-y-1">
-              <Progress value={pct} className={cn('h-3', progressColor(pct))} />
-              <div className="flex justify-between text-xs text-muted-foreground"><span>{pct.toFixed(1)}% used</span><span>{(100 - pct).toFixed(1)}% left</span></div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-2"><FileText className="h-5 w-5 text-primary" /><CardTitle>Job Cost Sheets ({sheets.length})</CardTitle></div>
-          </CardHeader>
-          <CardContent>
-            {sheets.length === 0 ? <p className="text-sm text-muted-foreground">No cost sheets linked.</p> : (
-              <ul className="space-y-2">
-                {sheets.map(s => (
-                  <li key={s.id} className="flex items-center justify-between rounded border p-3">
-                    <Link to={`/job-cost-sheets/${s.id}`} className="font-medium text-primary hover:underline">{s.name}</Link>
-                    <div className="flex items-center gap-2 text-sm">
-                      <span>{formatCurrency(Number(s.total_planned_cost ?? 0))}</span>
-                      <Badge variant="secondary" className={stateColors[s.state]}>{stateLabels[s.state] || s.state}</Badge>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </CardContent>
-        </Card>
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-2"><Users className="h-5 w-5 text-primary" /><CardTitle>Assigned Staff</CardTitle></div>
+            </CardHeader>
+            <CardContent>
+              {manager ? (
+                <div className="rounded border p-3">
+                  <div className="font-medium">{manager.full_name}</div>
+                  <div className="text-xs text-muted-foreground">Project Manager{manager.job_title ? ` • ${manager.job_title}` : ''}</div>
+                </div>
+              ) : <p className="text-sm text-muted-foreground">No project manager assigned.</p>}
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-2"><FileText className="h-5 w-5 text-primary" /><CardTitle>Documents ({docs.length})</CardTitle></div>
-          </CardHeader>
-          <CardContent>
-            {docs.length === 0 ? <p className="text-sm text-muted-foreground">No documents linked.</p> : (
-              <ul className="space-y-2">
-                {docs.map(d => (
-                  <li key={d.id} className="flex items-center justify-between rounded border p-3">
-                    <span className="truncate font-medium">{d.name}</span>
-                    <span className="text-xs text-muted-foreground">{formatDate(d.created_at)}</span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-      <Card>
-        <CardHeader>
-          <div className="flex items-center gap-2"><Users className="h-5 w-5 text-primary" /><CardTitle>Assigned Staff</CardTitle></div>
-        </CardHeader>
-        <CardContent>
-          {manager ? (
-            <div className="rounded border p-3">
-              <div className="font-medium">{manager.full_name}</div>
-              <div className="text-xs text-muted-foreground">Project Manager{manager.job_title ? ` • ${manager.job_title}` : ''}</div>
-            </div>
-          ) : <p className="text-sm text-muted-foreground">No project manager assigned.</p>}
-        </CardContent>
-      </Card>
+        <TabsContent value="milestones" className="mt-4">
+          <MilestoneList projectId={id} embedded />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

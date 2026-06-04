@@ -22,6 +22,11 @@ import ProjectManagerDashboard from "@/pages/dashboards/ProjectManagerDashboard"
 import SiteManagerDashboard from "@/pages/dashboards/SiteManagerDashboard";
 import AccountantDashboard from "@/pages/dashboards/AccountantDashboard";
 import ProcurementDashboard from "@/pages/dashboards/ProcurementDashboard";
+import DSRList from "@/pages/dsr/DSRList";
+import DSRForm from "@/pages/dsr/DSRForm";
+import VariationList from "@/pages/variations/VariationList";
+import VariationForm from "@/pages/variations/VariationForm";
+import MilestoneList from "@/pages/milestones/MilestoneList";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -50,6 +55,11 @@ const App = () => (
               <Route path="dashboard/site" element={<SiteManagerDashboard />} />
               <Route path="dashboard/accounts" element={<AccountantDashboard />} />
               <Route path="dashboard/procurement" element={<ProcurementDashboard />} />
+              <Route path="dsr" element={<DSRList />} />
+              <Route path="dsr/:id" element={<DSRForm />} />
+              <Route path="variations" element={<VariationList />} />
+              <Route path="variations/:id" element={<VariationForm />} />
+              <Route path="milestones" element={<MilestoneList />} />
               <Route path="admin" element={<AdminDashboard />} />
               <Route path="admin/staff" element={<StaffList />} />
             </Route>
