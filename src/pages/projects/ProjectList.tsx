@@ -33,7 +33,7 @@ export default function ProjectList() {
 
   const fetchProjects = async () => {
     setLoading(true);
-    let q = supabase.from('projects').select('*').order('created_at', { ascending: false });
+    let q = supabase.from('projects').select('*').filter('deleted_at', 'is', null).order('created_at', { ascending: false });
     if (!caps.viewAllProjects && user) {
       q = q.eq('project_manager_id', user.id);
     }

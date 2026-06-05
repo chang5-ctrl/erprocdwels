@@ -32,6 +32,7 @@ export default function DSRList() {
     const { data } = await (supabase as any)
       .from('daily_site_reports')
       .select('*, projects(name)')
+      .is('deleted_at', null)
       .order('report_date', { ascending: false });
     setRows(data ?? []);
     setLoading(false);

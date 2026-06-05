@@ -32,7 +32,7 @@ export default function MilestoneList({ projectId, embedded = false }: { project
 
   const load = async () => {
     setLoading(true);
-    let q = (supabase as any).from('milestones').select('*, projects(name)').order('planned_start');
+    let q = (supabase as any).from('milestones').select('*, projects(name)').is('deleted_at', null).order('planned_start');
     if (projectId) q = q.eq('project_id', projectId);
     const { data } = await q;
     setRows(data ?? []);
