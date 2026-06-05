@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Building2, FileSpreadsheet, LogOut, LayoutDashboard, Users, Truck, FileText, MessageSquare, Wallet, ClipboardList, FileEdit, Flag } from 'lucide-react';
+import { Building2, FileSpreadsheet, LogOut, LayoutDashboard, Users, Truck, FileText, MessageSquare, Wallet, ClipboardList, FileEdit, Flag, Trash2 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -37,6 +37,7 @@ const operationsMenu: MenuItem[] = [
 const adminMenu: MenuItem[] = [
   { title: 'Dashboard', url: '/admin', icon: LayoutDashboard, module: 'dashboard' },
   { title: 'Staff', url: '/admin/staff', icon: Users, module: 'staff' },
+  { title: 'Recently Deleted', url: '/admin/recently-deleted', icon: Trash2, module: 'recently-deleted' },
 ];
 
 export function AppSidebar() {

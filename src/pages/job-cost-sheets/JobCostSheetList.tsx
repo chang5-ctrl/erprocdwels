@@ -40,6 +40,7 @@ export default function JobCostSheetList() {
     const { data } = await supabase
       .from('job_cost_sheets')
       .select('id, name, status, category, amount, total_planned_cost, sheet_date, created_at, projects(name)')
+      .filter('deleted_at', 'is', null)
       .order('created_at', { ascending: false });
     setSheets((data as any) ?? []);
     setLoading(false);

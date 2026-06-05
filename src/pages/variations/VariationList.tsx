@@ -33,7 +33,7 @@ export default function VariationList() {
 
   const load = async () => {
     setLoading(true);
-    const { data } = await (supabase as any).from('variation_orders').select('*, projects(name, budget_total)').order('created_at', { ascending: false });
+    const { data } = await (supabase as any).from('variation_orders').select('*, projects(name, budget_total)').is('deleted_at', null).order('created_at', { ascending: false });
     setRows(data ?? []);
     const { data: ln } = await (supabase as any).from('variation_order_lines').select('vo_id, amount');
     const map: Record<string, number> = {};

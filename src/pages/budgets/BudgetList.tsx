@@ -25,7 +25,7 @@ export default function BudgetList() {
   const fetchAll = async () => {
     setLoading(true);
     const [{ data: bs }, { data: ls }, { data: pjs }, { data: us }] = await Promise.all([
-      supabase.from('budgets').select('*').order('created_at', { ascending: false }),
+      supabase.from('budgets').select('*').filter('deleted_at', 'is', null).order('created_at', { ascending: false }),
       supabase.from('budget_lines').select('budget_id, planned_amount, actual_expenditure'),
       supabase.from('projects').select('id, name'),
       supabase.from('user_profiles').select('user_id, full_name'),

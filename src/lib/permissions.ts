@@ -14,11 +14,12 @@ export type ModuleKey =
   | 'variations'
   | 'milestones'
   | 'dashboard'
-  | 'staff';
+  | 'staff'
+  | 'recently-deleted';
 
 // What each role is allowed to see in the sidebar
 export const ROLE_MODULES: Record<AppRole, ModuleKey[]> = {
-  admin: ['dashboard', 'projects', 'job-cost-sheets', 'budgets', 'suppliers', 'documents', 'chat', 'dsr', 'variations', 'milestones', 'staff'],
+  admin: ['dashboard', 'projects', 'job-cost-sheets', 'budgets', 'suppliers', 'documents', 'chat', 'dsr', 'variations', 'milestones', 'staff', 'recently-deleted'],
   project_manager: ['projects', 'job-cost-sheets', 'budgets', 'documents', 'chat', 'dsr', 'variations', 'milestones'],
   site_manager: ['projects', 'documents', 'chat', 'dsr', 'milestones'],
   accountant: ['projects', 'job-cost-sheets', 'budgets', 'documents', 'chat', 'variations', 'milestones'],
