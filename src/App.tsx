@@ -13,6 +13,7 @@ import JobCostSheetList from "@/pages/job-cost-sheets/JobCostSheetList";
 import JobCostSheetForm from "@/pages/job-cost-sheets/JobCostSheetForm";
 import AdminDashboard from "@/pages/admin/Dashboard";
 import StaffList from "@/pages/admin/StaffList";
+import RecentlyDeleted from "@/pages/admin/RecentlyDeleted";
 import SupplierList from "@/pages/suppliers/SupplierList";
 import DocumentList from "@/pages/documents/DocumentList";
 import TeamChat from "@/pages/chat/TeamChat";
@@ -62,6 +63,7 @@ const App = () => (
               <Route path="milestones" element={<MilestoneList />} />
               <Route path="admin" element={<AdminDashboard />} />
               <Route path="admin/staff" element={<StaffList />} />
+              <Route path="admin/recently-deleted" element={<RecentlyDeleted />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
