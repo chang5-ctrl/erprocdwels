@@ -18,6 +18,7 @@ import { Plus, Truck, Pencil, Trash2, Search, ChevronLeft, ChevronRight } from '
 import { toast } from '@/hooks/use-toast';
 import { formatDate } from '@/lib/format';
 import type { Tables } from '@/integrations/supabase/types';
+import { softDelete } from '@/lib/soft-delete';
 
 type Supplier = Tables<'suppliers'>;
 const PAGE_SIZE = 10;

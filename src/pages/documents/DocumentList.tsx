@@ -15,6 +15,7 @@ import {
 import { FileText, Download, Trash2, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { formatDate } from '@/lib/format';
+import { softDelete } from '@/lib/soft-delete';
 import type { Tables } from '@/integrations/supabase/types';
 
 type Doc = Tables<'documents'>;
@@ -59,7 +60,7 @@ export default function DocumentList() {
 
   const fetchDocs = async () => {
     setLoading(true);
-    let q = supabase.from('documents').select('*', { count: 'exact' });
+    let q = supabase.from('documents').select('*', { count: 'exact' }).filter('deleted_at', 'is', null);
     if (debounced) q = q.ilike('name', `%${debounced}%`);
     if (filter !== 'all') q = q.not(`${filter}_id`, 'is', null);
     const from = page * PAGE_SIZE;
@@ -139,11 +140,11 @@ export default function DocumentList() {
     if (!deleteDoc) return;
     const d = deleteDoc;
     setDeleteDoc(null);
-    const { error: sErr } = await supabase.storage.from('documents').remove([d.storage_path]);
-    if (sErr) { toast({ title: 'File delete failed', description: sErr.message, variant: 'destructive' }); return; }
-    const { error: dbErr } = await supabase.from('documents').delete().eq('id', d.id);
-    if (dbErr) { toast({ title: 'Record delete failed', description: dbErr.message, variant: 'destructive' }); return; }
-    toast({ title: 'Document deleted' });
+    // Per policy: keep file in storage; only soft-delete the row so it can be restored.
+    const { error } = await softDelete({ table: 'documents', id: d.id, label: d.name });
+    if (error) { toast({ title: 'Delete failed', description: error.message, variant: 'destructive' }); return; }
+    toast({ title: 'Document moved to Recently Deleted' });
+    fetchDocs();
   };
 
   const linkLabel = (d: Doc) => {
