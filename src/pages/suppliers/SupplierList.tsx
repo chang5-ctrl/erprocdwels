@@ -45,7 +45,7 @@ export default function SupplierList() {
 
   const fetch = async () => {
     setLoading(true);
-    let q = supabase.from('suppliers').select('*', { count: 'exact' });
+    let q = supabase.from('suppliers').select('*', { count: 'exact' }).filter('deleted_at', 'is', null);
     if (debounced) {
       const s = `%${debounced}%`;
       q = q.or(`name.ilike.${s},email.ilike.${s},phone.ilike.${s},tax_id.ilike.${s}`);
@@ -99,10 +99,12 @@ export default function SupplierList() {
 
   const confirmDelete = async () => {
     if (!deleteId) return;
-    const { error } = await supabase.from('suppliers').delete().eq('id', deleteId);
+    const row = rows.find(r => r.id === deleteId);
+    const { error } = await softDelete({ table: 'suppliers', id: deleteId, label: row?.name });
     setDeleteId(null);
     if (error) { toast({ title: 'Delete failed', description: error.message, variant: 'destructive' }); return; }
-    toast({ title: 'Supplier deleted' });
+    toast({ title: 'Supplier moved to Recently Deleted' });
+    fetch();
   };
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
