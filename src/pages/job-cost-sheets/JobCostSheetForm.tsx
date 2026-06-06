@@ -239,7 +239,26 @@ export default function JobCostSheetForm() {
                       </TableCell>
                     )}
                     <TableCell>
-                      <Input className="h-8 text-xs" value={line.description} onChange={e => updateLine(line._index, 'description', e.target.value)} placeholder="Description" />
+                      <Input
+                        className="h-8 text-xs"
+                        value={line.description}
+                        onChange={e => updateLine(line._index, 'description', e.target.value)}
+                        onBlur={async (e) => {
+                          if (jobType !== 'material' || line.unit_price > 0 || !e.target.value.trim()) return;
+                          const { data } = await supabase
+                            .from('materials')
+                            .select('unit_cost, name')
+                            .ilike('name', `%${e.target.value.trim()}%`)
+                            .is('deleted_at', null)
+                            .limit(1)
+                            .maybeSingle();
+                          if (data && Number(data.unit_cost) > 0) {
+                            updateLine(line._index, 'unit_price', Number(data.unit_cost));
+                            toast.success(`Auto-filled cost from "${data.name}"`);
+                          }
+                        }}
+                        placeholder="Description (auto-fills from Materials)"
+                      />
                     </TableCell>
                     <TableCell>
                       <Input className="h-8 text-xs" type="number" min={0} value={line.quantity} onChange={e => updateLine(line._index, 'quantity', parseFloat(e.target.value) || 0)} />
