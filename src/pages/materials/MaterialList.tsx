@@ -374,9 +374,8 @@ export default function MaterialList() {
       <ConfirmDeleteDialog
         open={!!deleteId}
         onOpenChange={(o) => !o && setDeleteId(null)}
-        onConfirm={confirmDelete}
-        title="Move material to Recently Deleted?"
-        description="The item will be hidden from lists but can be restored within 30 days."
+        onConfirm={async () => { await confirmDelete(); }}
+        itemLabel={rows.find(r => r.id === deleteId)?.name}
       />
 
       <Sheet open={!!moveFor} onOpenChange={(o) => !o && setMoveFor(null)}>
