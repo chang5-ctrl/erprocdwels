@@ -100,9 +100,9 @@ export default function ProjectDetail() {
 
       <Card>
         <CardHeader>
-          <div className="flex items-start justify-between">
-            <div>
-              <div className="flex items-center gap-2">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex-1">
+              <div className="flex items-center gap-2 flex-wrap">
                 <Building2 className="h-5 w-5 text-primary" />
                 <CardTitle className="text-2xl">{project.name}</CardTitle>
                 <Badge variant="secondary" className={statusColors[project.status]}>
@@ -111,6 +111,19 @@ export default function ProjectDetail() {
               </div>
               {project.description && <p className="mt-2 text-sm text-muted-foreground">{project.description}</p>}
             </div>
+            {health && (
+              <div className={cn('rounded-lg border px-4 py-2 text-center shrink-0', {
+                'border-emerald-300 bg-emerald-50': health.band === 'green',
+                'border-amber-300 bg-amber-50': health.band === 'amber',
+                'border-destructive/40 bg-destructive/5': health.band === 'red',
+              })}>
+                <div className="flex items-center gap-1 text-xs uppercase tracking-wide text-muted-foreground">
+                  <Activity className="h-3 w-3" /> Health
+                </div>
+                <div className={cn('text-2xl font-bold leading-none', health.color)}>{health.score}</div>
+                <div className={cn('text-[10px] font-medium', health.color)}>{health.label}</div>
+              </div>
+            )}
           </div>
         </CardHeader>
         <CardContent className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 text-sm">
