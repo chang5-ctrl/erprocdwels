@@ -187,6 +187,11 @@ export default function JobCostSheetForm() {
     if (error) { toast.error(error.message); return; }
     setState(nextState);
     toast.success(`State changed to ${stateLabels[nextState]}`);
+    // AI: smart budget alert when sheet is approved/done
+    if (projectId && (nextState === 'approved' || nextState === 'done')) {
+      const { checkProjectBudgetAlert } = await import('@/lib/notifications');
+      checkProjectBudgetAlert(projectId);
+    }
   };
 
   const canAdvance = !isNew && state !== 'done' && (hasRole('admin') || hasRole('site_manager'));
