@@ -17,6 +17,7 @@ export const SOFT_DELETE_TABLES = [
   'milestones',
   'user_profiles',
   'products',
+  'materials',
   'chat_messages',
   'chat_channels',
 ] as const;
@@ -38,6 +39,7 @@ export const TABLE_LABELS: Record<SoftDeleteTable, string> = {
   milestones: 'Milestone',
   user_profiles: 'Staff Profile',
   products: 'Product',
+  materials: 'Material',
   chat_messages: 'Chat Message',
   chat_channels: 'Chat Channel',
 };
@@ -58,6 +60,7 @@ export const NAME_COLUMN: Record<SoftDeleteTable, string> = {
   milestones: 'name',
   user_profiles: 'full_name',
   products: 'name',
+  materials: 'name',
   chat_messages: 'content',
   chat_channels: 'name',
 };

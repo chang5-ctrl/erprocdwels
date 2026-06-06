@@ -8,7 +8,8 @@ import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import MilestoneList from '@/pages/milestones/MilestoneList';
-import { ArrowLeft, Building2, FileText, Users, Wallet, Flag } from 'lucide-react';
+import { ArrowLeft, Building2, FileText, Users, Wallet, Flag, Activity } from 'lucide-react';
+import { loadProjectHealth, type HealthScore } from '@/lib/health';
 import { toast } from 'sonner';
 import { formatCurrency, formatDate, statusColors, statusLabels, stateLabels, stateColors } from '@/lib/format';
 import { cn } from '@/lib/utils';
@@ -34,6 +35,11 @@ export default function ProjectDetail() {
   const [docs, setDocs] = useState<Document[]>([]);
   const [staff, setStaff] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
+  const [health, setHealth] = useState<HealthScore | null>(null);
+
+  useEffect(() => {
+    if (id) loadProjectHealth(id).then(setHealth);
+  }, [id, project?.budget_spent, project?.budget_total]);
 
   useEffect(() => {
     if (!id) return;
@@ -94,9 +100,9 @@ export default function ProjectDetail() {
 
       <Card>
         <CardHeader>
-          <div className="flex items-start justify-between">
-            <div>
-              <div className="flex items-center gap-2">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex-1">
+              <div className="flex items-center gap-2 flex-wrap">
                 <Building2 className="h-5 w-5 text-primary" />
                 <CardTitle className="text-2xl">{project.name}</CardTitle>
                 <Badge variant="secondary" className={statusColors[project.status]}>
@@ -105,6 +111,19 @@ export default function ProjectDetail() {
               </div>
               {project.description && <p className="mt-2 text-sm text-muted-foreground">{project.description}</p>}
             </div>
+            {health && (
+              <div className={cn('rounded-lg border px-4 py-2 text-center shrink-0', {
+                'border-emerald-300 bg-emerald-50': health.band === 'green',
+                'border-amber-300 bg-amber-50': health.band === 'amber',
+                'border-destructive/40 bg-destructive/5': health.band === 'red',
+              })}>
+                <div className="flex items-center gap-1 text-xs uppercase tracking-wide text-muted-foreground">
+                  <Activity className="h-3 w-3" /> Health
+                </div>
+                <div className={cn('text-2xl font-bold leading-none', health.color)}>{health.score}</div>
+                <div className={cn('text-[10px] font-medium', health.color)}>{health.label}</div>
+              </div>
+            )}
           </div>
         </CardHeader>
         <CardContent className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 text-sm">

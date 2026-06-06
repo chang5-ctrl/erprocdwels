@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Building2, FileSpreadsheet, LogOut, LayoutDashboard, Users, Truck, FileText, MessageSquare, Wallet, ClipboardList, FileEdit, Flag, Trash2 } from 'lucide-react';
+import { Building2, FileSpreadsheet, LogOut, LayoutDashboard, Users, Truck, FileText, MessageSquare, Wallet, ClipboardList, FileEdit, Flag, Trash2, Package } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -26,6 +26,7 @@ const baseMenu: MenuItem[] = [
   { title: 'Job Cost Sheets', url: '/job-cost-sheets', icon: FileSpreadsheet, module: 'job-cost-sheets' },
   { title: 'Budgets', url: '/budgets', icon: Wallet, module: 'budgets' },
   { title: 'Suppliers', url: '/suppliers', icon: Truck, module: 'suppliers' },
+  { title: 'Materials', url: '/materials', icon: Package, module: 'materials' },
   { title: 'Documents', url: '/documents', icon: FileText, module: 'documents' },
   { title: 'Team Chat', url: '/chat', icon: MessageSquare, module: 'chat', key: 'chat' },
 ];

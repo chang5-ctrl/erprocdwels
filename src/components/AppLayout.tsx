@@ -2,6 +2,7 @@ import { Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
+import { NotificationBell } from '@/components/NotificationBell';
 import logo from '@/assets/logo.png';
 
 export default function AppLayout() {
@@ -30,6 +31,9 @@ export default function AppLayout() {
               <span className="font-bold text-primary-foreground text-lg hidden sm:inline">
                 Rocdwels ERP
               </span>
+            </div>
+            <div className="ml-auto">
+              <NotificationBell />
             </div>
           </header>
 
