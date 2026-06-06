@@ -8,7 +8,8 @@ import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import MilestoneList from '@/pages/milestones/MilestoneList';
-import { ArrowLeft, Building2, FileText, Users, Wallet, Flag } from 'lucide-react';
+import { ArrowLeft, Building2, FileText, Users, Wallet, Flag, Activity } from 'lucide-react';
+import { loadProjectHealth, type HealthScore } from '@/lib/health';
 import { toast } from 'sonner';
 import { formatCurrency, formatDate, statusColors, statusLabels, stateLabels, stateColors } from '@/lib/format';
 import { cn } from '@/lib/utils';
@@ -34,6 +35,11 @@ export default function ProjectDetail() {
   const [docs, setDocs] = useState<Document[]>([]);
   const [staff, setStaff] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
+  const [health, setHealth] = useState<HealthScore | null>(null);
+
+  useEffect(() => {
+    if (id) loadProjectHealth(id).then(setHealth);
+  }, [id, project?.budget_spent, project?.budget_total]);
 
   useEffect(() => {
     if (!id) return;
