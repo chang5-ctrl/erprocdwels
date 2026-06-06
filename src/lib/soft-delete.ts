@@ -17,6 +17,7 @@ export const SOFT_DELETE_TABLES = [
   'milestones',
   'user_profiles',
   'products',
+  'materials',
   'chat_messages',
   'chat_channels',
 ] as const;
