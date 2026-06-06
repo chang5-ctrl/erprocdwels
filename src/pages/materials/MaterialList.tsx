@@ -18,7 +18,7 @@ import {
 } from '@/components/ui/sheet';
 import { Package, Plus, Pencil, Trash2, Search, ArrowUpDown, AlertTriangle, History } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
-import { ConfirmDeleteDialog } from '@/components/ConfirmDeleteDialog';
+import ConfirmDeleteDialog from '@/components/ConfirmDeleteDialog';
 import { softDelete } from '@/lib/soft-delete';
 import { formatCurrency, formatDate } from '@/lib/format';
 
