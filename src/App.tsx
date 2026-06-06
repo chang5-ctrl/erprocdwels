@@ -28,6 +28,7 @@ import DSRForm from "@/pages/dsr/DSRForm";
 import VariationList from "@/pages/variations/VariationList";
 import VariationForm from "@/pages/variations/VariationForm";
 import MilestoneList from "@/pages/milestones/MilestoneList";
+import MaterialList from "@/pages/materials/MaterialList";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -61,6 +62,7 @@ const App = () => (
               <Route path="variations" element={<VariationList />} />
               <Route path="variations/:id" element={<VariationForm />} />
               <Route path="milestones" element={<MilestoneList />} />
+              <Route path="materials" element={<MaterialList />} />
               <Route path="admin" element={<AdminDashboard />} />
               <Route path="admin/staff" element={<StaffList />} />
               <Route path="admin/recently-deleted" element={<RecentlyDeleted />} />
