@@ -29,6 +29,8 @@ import VariationList from "@/pages/variations/VariationList";
 import VariationForm from "@/pages/variations/VariationForm";
 import MilestoneList from "@/pages/milestones/MilestoneList";
 import MaterialList from "@/pages/materials/MaterialList";
+import RequisitionList from "@/pages/requisitions/RequisitionList";
+import RequisitionForm from "@/pages/requisitions/RequisitionForm";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -63,6 +65,8 @@ const App = () => (
               <Route path="variations/:id" element={<VariationForm />} />
               <Route path="milestones" element={<MilestoneList />} />
               <Route path="materials" element={<MaterialList />} />
+              <Route path="requisitions" element={<RequisitionList />} />
+              <Route path="requisitions/:id" element={<RequisitionForm />} />
               <Route path="admin" element={<AdminDashboard />} />
               <Route path="admin/staff" element={<StaffList />} />
               <Route path="admin/recently-deleted" element={<RecentlyDeleted />} />

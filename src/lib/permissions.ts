@@ -14,17 +14,18 @@ export type ModuleKey =
   | 'dsr'
   | 'variations'
   | 'milestones'
+  | 'requisitions'
   | 'dashboard'
   | 'staff'
   | 'recently-deleted';
 
 // What each role is allowed to see in the sidebar
 export const ROLE_MODULES: Record<AppRole, ModuleKey[]> = {
-  admin: ['dashboard', 'projects', 'job-cost-sheets', 'budgets', 'suppliers', 'materials', 'documents', 'chat', 'dsr', 'variations', 'milestones', 'staff', 'recently-deleted'],
-  project_manager: ['projects', 'job-cost-sheets', 'budgets', 'materials', 'documents', 'chat', 'dsr', 'variations', 'milestones'],
-  site_manager: ['projects', 'materials', 'documents', 'chat', 'dsr', 'milestones'],
-  accountant: ['projects', 'job-cost-sheets', 'budgets', 'materials', 'documents', 'chat', 'variations', 'milestones'],
-  procurement_officer: ['suppliers', 'materials', 'documents', 'chat'],
+  admin: ['dashboard', 'projects', 'job-cost-sheets', 'budgets', 'suppliers', 'materials', 'documents', 'chat', 'dsr', 'variations', 'milestones', 'requisitions', 'staff', 'recently-deleted'],
+  project_manager: ['projects', 'job-cost-sheets', 'budgets', 'materials', 'documents', 'chat', 'dsr', 'variations', 'milestones', 'requisitions'],
+  site_manager: ['projects', 'materials', 'documents', 'chat', 'dsr', 'milestones', 'requisitions'],
+  accountant: ['projects', 'job-cost-sheets', 'budgets', 'materials', 'documents', 'chat', 'variations', 'milestones', 'requisitions'],
+  procurement_officer: ['suppliers', 'materials', 'documents', 'chat', 'requisitions'],
 };
 
 // Capability flags per role

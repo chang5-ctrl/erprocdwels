@@ -63,7 +63,7 @@ export default function RequisitionList() {
       .order('created_at', { ascending: false });
     // Fallback if FK alias name is unknown — fetch employee names separately
     if (data && data.length && !('employee' in data[0])) {
-      const ids = Array.from(new Set(data.map((r: any) => r.employee_id).filter(Boolean)));
+      const ids = Array.from(new Set(data.map((r: any) => r.employee_id).filter(Boolean))) as string[];
       const { data: prof } = await supabase.from('user_profiles').select('user_id, full_name').in('user_id', ids);
       const map: Record<string, string> = {};
       (prof ?? []).forEach((p: any) => { map[p.user_id] = p.full_name; });
