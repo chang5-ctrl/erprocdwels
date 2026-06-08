@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Building2, FileSpreadsheet, LogOut, LayoutDashboard, Users, Truck, FileText, MessageSquare, Wallet, ClipboardList, FileEdit, Flag, Trash2, Package } from 'lucide-react';
+import { Building2, FileSpreadsheet, LogOut, LayoutDashboard, Users, Truck, FileText, MessageSquare, Wallet, ClipboardList, FileEdit, Flag, Trash2, Package, ShoppingCart } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -32,6 +32,7 @@ const baseMenu: MenuItem[] = [
 ];
 const operationsMenu: MenuItem[] = [
   { title: 'Daily Site Reports', url: '/dsr', icon: ClipboardList, module: 'dsr' },
+  { title: 'Requisitions', url: '/requisitions', icon: ShoppingCart, module: 'requisitions' },
   { title: 'Variation Orders', url: '/variations', icon: FileEdit, module: 'variations' },
   { title: 'Milestones', url: '/milestones', icon: Flag, module: 'milestones' },
 ];
