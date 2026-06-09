@@ -166,9 +166,29 @@ export default function TeamChat() {
     if (!input.trim() || !activeId || !user) return;
     const content = input.trim();
     setInput('');
-    const { error } = await supabase.from('chat_messages')
-      .insert({ channel_id: activeId, sender_id: user.id, content });
-    if (error) { toast.error(error.message); setInput(content); }
+    // Optimistic insert so the sender sees their message immediately
+    const tempId = `temp-${Date.now()}`;
+    const optimistic: Message = {
+      id: tempId, channel_id: activeId, sender_id: user.id,
+      content, created_at: new Date().toISOString(),
+    };
+    setMessages(prev => [...prev, optimistic]);
+    setTimeout(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight }), 30);
+    const { data, error } = await supabase.from('chat_messages')
+      .insert({ channel_id: activeId, sender_id: user.id, content })
+      .select().single();
+    if (error) {
+      setMessages(prev => prev.filter(m => m.id !== tempId));
+      toast.error(error.message);
+      setInput(content);
+      return;
+    }
+    // Replace optimistic row with the real one (in case realtime is slow / drops)
+    setMessages(prev => {
+      const without = prev.filter(m => m.id !== tempId);
+      if (without.some(p => p.id === (data as any).id)) return without;
+      return [...without, data as any];
+    });
   };
 
   return (
