@@ -67,10 +67,11 @@ export default function TeamChat() {
     if (!user) return;
     const { data: memberships } = await supabase
       .from('chat_channel_members')
-      .select('channel_id, last_read_at, chat_channels(id, name, is_group)')
+      .select('channel_id, last_read_at, chat_channels(id, name, is_group, channel_type)')
       .eq('user_id', user.id);
 
     const rows: Channel[] = [];
+    const seenDm = new Set<string>();
     for (const m of memberships || []) {
       const ch: any = (m as any).chat_channels;
       if (!ch) continue;
@@ -80,7 +81,13 @@ export default function TeamChat() {
         const { data: others } = await supabase
           .from('chat_channel_members').select('user_id').eq('channel_id', ch.id).neq('user_id', user.id).limit(1);
         other = others?.[0]?.user_id;
-        display = (other && profileMap[other]?.full_name) || 'Direct message';
+        // Skip ghost DMs (other user has no profile) or duplicate DMs with same peer
+        if (!other || !profileMap[other]) continue;
+        if (seenDm.has(other)) continue;
+        seenDm.add(other);
+        display = profileMap[other].full_name || 'Direct message';
+      } else if (ch.channel_type === 'general') {
+        display = ch.name || 'General';
       }
       const { data: lastMsgArr } = await supabase
         .from('chat_messages')
@@ -99,7 +106,11 @@ export default function TeamChat() {
         unread: unread || 0, last_read_at: (m as any).last_read_at,
       });
     }
-    rows.sort((a, b) => (b.last_message_at || '').localeCompare(a.last_message_at || ''));
+    rows.sort((a, b) => {
+      // Group channels (General, project) on top
+      if (a.is_group !== b.is_group) return a.is_group ? -1 : 1;
+      return (b.last_message_at || '').localeCompare(a.last_message_at || '');
+    });
     setChannels(rows);
     if (!activeId && rows.length) setActiveId(rows[0].id);
   };
