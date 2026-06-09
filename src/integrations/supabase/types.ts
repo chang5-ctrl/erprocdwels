@@ -170,6 +170,7 @@ export type Database = {
       }
       chat_channels: {
         Row: {
+          channel_type: string
           created_at: string
           created_by: string | null
           deleted_at: string | null
@@ -177,8 +178,10 @@ export type Database = {
           id: string
           is_group: boolean
           name: string | null
+          project_id: string | null
         }
         Insert: {
+          channel_type?: string
           created_at?: string
           created_by?: string | null
           deleted_at?: string | null
@@ -186,8 +189,10 @@ export type Database = {
           id?: string
           is_group?: boolean
           name?: string | null
+          project_id?: string | null
         }
         Update: {
+          channel_type?: string
           created_at?: string
           created_by?: string | null
           deleted_at?: string | null
@@ -195,8 +200,17 @@ export type Database = {
           id?: string
           is_group?: boolean
           name?: string | null
+          project_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "chat_channels_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       chat_messages: {
         Row: {
