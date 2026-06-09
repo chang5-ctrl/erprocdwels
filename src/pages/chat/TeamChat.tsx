@@ -136,7 +136,11 @@ export default function TeamChat() {
     const ch = supabase.channel('chat-global')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' }, async (payload) => {
         const msg = payload.new as Message;
-        setMessages(prev => msg.channel_id === activeIdRef.current ? [...prev, msg] : prev);
+        setMessages(prev => {
+          if (msg.channel_id !== activeIdRef.current) return prev;
+          if (prev.some(p => p.id === msg.id)) return prev;
+          return [...prev, msg];
+        });
         // refresh sidebar preview/unread
         setChannels(prev => prev.map(c => c.id === msg.channel_id ? {
           ...c,
