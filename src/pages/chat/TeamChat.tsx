@@ -67,10 +67,11 @@ export default function TeamChat() {
     if (!user) return;
     const { data: memberships } = await supabase
       .from('chat_channel_members')
-      .select('channel_id, last_read_at, chat_channels(id, name, is_group)')
+      .select('channel_id, last_read_at, chat_channels(id, name, is_group, channel_type)')
       .eq('user_id', user.id);
 
     const rows: Channel[] = [];
+    const seenDm = new Set<string>();
     for (const m of memberships || []) {
       const ch: any = (m as any).chat_channels;
       if (!ch) continue;
@@ -80,7 +81,13 @@ export default function TeamChat() {
         const { data: others } = await supabase
           .from('chat_channel_members').select('user_id').eq('channel_id', ch.id).neq('user_id', user.id).limit(1);
         other = others?.[0]?.user_id;
-        display = (other && profileMap[other]?.full_name) || 'Direct message';
+        // Skip ghost DMs (other user has no profile) or duplicate DMs with same peer
+        if (!other || !profileMap[other]) continue;
+        if (seenDm.has(other)) continue;
+        seenDm.add(other);
+        display = profileMap[other].full_name || 'Direct message';
+      } else if (ch.channel_type === 'general') {
+        display = ch.name || 'General';
       }
       const { data: lastMsgArr } = await supabase
         .from('chat_messages')
@@ -99,7 +106,11 @@ export default function TeamChat() {
         unread: unread || 0, last_read_at: (m as any).last_read_at,
       });
     }
-    rows.sort((a, b) => (b.last_message_at || '').localeCompare(a.last_message_at || ''));
+    rows.sort((a, b) => {
+      // Group channels (General, project) on top
+      if (a.is_group !== b.is_group) return a.is_group ? -1 : 1;
+      return (b.last_message_at || '').localeCompare(a.last_message_at || '');
+    });
     setChannels(rows);
     if (!activeId && rows.length) setActiveId(rows[0].id);
   };
@@ -125,7 +136,11 @@ export default function TeamChat() {
     const ch = supabase.channel('chat-global')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' }, async (payload) => {
         const msg = payload.new as Message;
-        setMessages(prev => msg.channel_id === activeIdRef.current ? [...prev, msg] : prev);
+        setMessages(prev => {
+          if (msg.channel_id !== activeIdRef.current) return prev;
+          if (prev.some(p => p.id === msg.id)) return prev;
+          return [...prev, msg];
+        });
         // refresh sidebar preview/unread
         setChannels(prev => prev.map(c => c.id === msg.channel_id ? {
           ...c,
@@ -151,9 +166,29 @@ export default function TeamChat() {
     if (!input.trim() || !activeId || !user) return;
     const content = input.trim();
     setInput('');
-    const { error } = await supabase.from('chat_messages')
-      .insert({ channel_id: activeId, sender_id: user.id, content });
-    if (error) { toast.error(error.message); setInput(content); }
+    // Optimistic insert so the sender sees their message immediately
+    const tempId = `temp-${Date.now()}`;
+    const optimistic: Message = {
+      id: tempId, channel_id: activeId, sender_id: user.id,
+      content, created_at: new Date().toISOString(),
+    };
+    setMessages(prev => [...prev, optimistic]);
+    setTimeout(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight }), 30);
+    const { data, error } = await supabase.from('chat_messages')
+      .insert({ channel_id: activeId, sender_id: user.id, content })
+      .select().single();
+    if (error) {
+      setMessages(prev => prev.filter(m => m.id !== tempId));
+      toast.error(error.message);
+      setInput(content);
+      return;
+    }
+    // Replace optimistic row with the real one (in case realtime is slow / drops)
+    setMessages(prev => {
+      const without = prev.filter(m => m.id !== tempId);
+      if (without.some(p => p.id === (data as any).id)) return without;
+      return [...without, data as any];
+    });
   };
 
   return (
