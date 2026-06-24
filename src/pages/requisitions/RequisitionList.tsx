@@ -14,6 +14,7 @@ import { Plus, ClipboardList, CheckCircle2, Clock } from 'lucide-react';
 import { formatDate } from '@/lib/format';
 import { toast } from 'sonner';
 import { logActivity } from '@/lib/activity';
+import { buildRequisitionPayload } from './requisitionUtils';
 
 const STATUS_COLORS: Record<string, string> = {
   new: 'bg-blue-100 text-blue-800',
@@ -103,16 +104,8 @@ export default function RequisitionList() {
     const req_number = `REQ/${String(nextNum).padStart(5, '0')}`;
     const { data: { user } } = await supabase.auth.getUser();
     const payload: any = {
+      ...buildRequisitionPayload(form, user?.id),
       requisition_number: req_number,
-      project_id: form.project_id,
-      requisition_type: form.requisition_type,
-      employee_id: form.employee_id || null,
-      department: form.department || null,
-      deadline: form.deadline || null,
-      is_change_order: !!form.is_change_order,
-      reason: form.reason || null,
-      status: 'new',
-      created_by: user?.id ?? null,
     };
     const { data, error } = await (supabase as any).from('requisitions').insert(payload).select('id').single();
     setCreating(false);
