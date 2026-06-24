@@ -17,6 +17,7 @@ import type { Tables } from '@/integrations/supabase/types';
 import BudgetForm from '@/pages/budgets/components/BudgetForm';
 import BudgetLinesTable from '@/pages/budgets/components/BudgetLinesTable';
 import { calculateBudgetSummary } from './budgetUtils';
+import { buildJobCostLinePayload } from './jobCostLineUtils';
 
 type Project = Tables<'projects'>;
 
@@ -113,8 +114,8 @@ export default function JobCostSheetForm() {
             id: l.id,
             job_type: l.job_type,
             description: l.description || '',
-            material_name: l.product || '',
-            worker_name: (l as any).worker_name || '',
+            material_name: l.job_type === 'labour' ? '' : l.product || '',
+            worker_name: l.job_type === 'labour' ? l.product || '' : '',
             product_id: l.product_id,
             quantity: l.quantity,
             unit_price: l.unit_price,
@@ -191,16 +192,19 @@ export default function JobCostSheetForm() {
       }
 
       for (const line of lines) {
-        const payload = {
+        const payload = buildJobCostLinePayload({
           job_cost_sheet_id: currentSheetId,
-          job_type: line.job_type,
-          description: line.description || null,
-          product: line.material_name || null,
-          product_id: line.product_id || null,
-          quantity: line.quantity,
-          unit_price: line.unit_price,
-          worker_name: line.worker_name || null,
-        } as any;
+          line: {
+            job_type: line.job_type,
+            description: line.description,
+            material_name: line.material_name,
+            worker_name: line.worker_name,
+            product_id: line.product_id,
+            quantity: line.quantity,
+            unit_price: line.unit_price,
+            total_cost: line.total_cost,
+          },
+        });
 
         if (line.isNew || !line.id) {
           await supabase.from('job_cost_lines').insert(payload);

@@ -9,6 +9,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { MessageSquare, Send, Plus, Users } from 'lucide-react';
 import { toast } from 'sonner';
+import { resolveChannelDisplayName } from './chatUtils';
 
 interface Channel {
   id: string;
@@ -75,20 +76,17 @@ export default function TeamChat() {
     for (const m of memberships || []) {
       const ch: any = (m as any).chat_channels;
       if (!ch) continue;
-      let display = ch.name || 'Conversation';
+      let display = 'Conversation';
       let other: string | undefined;
       if (!ch.is_group) {
         const { data: others } = await supabase
           .from('chat_channel_members').select('user_id').eq('channel_id', ch.id).neq('user_id', user.id).limit(1);
         other = others?.[0]?.user_id;
-        // Skip ghost DMs (other user has no profile) or duplicate DMs with same peer
-        if (!other || !profileMap[other]) continue;
+        if (!other) continue;
         if (seenDm.has(other)) continue;
         seenDm.add(other);
-        display = profileMap[other].full_name || 'Direct message';
-      } else if (ch.channel_type === 'general') {
-        display = ch.name || 'General';
       }
+      display = resolveChannelDisplayName(ch, { otherUserId: other, profiles: profileMap });
       const { data: lastMsgArr } = await supabase
         .from('chat_messages')
         .select('content, created_at').eq('channel_id', ch.id).order('created_at', { ascending: false }).limit(1);
@@ -115,6 +113,15 @@ export default function TeamChat() {
     if (!activeId && rows.length) setActiveId(rows[0].id);
   };
 
+  const refreshChatState = async (focusChannelId?: string) => {
+    const map = await loadProfiles();
+    await loadChannels(map);
+    const targetId = focusChannelId || activeIdRef.current;
+    if (targetId) {
+      await loadMessages(targetId);
+    }
+  };
+
   const loadMessages = async (channelId: string) => {
     const { data } = await supabase.from('chat_messages')
       .select('*').eq('channel_id', channelId).order('created_at');
@@ -129,19 +136,17 @@ export default function TeamChat() {
 
   useEffect(() => {
     if (!user) return;
-    (async () => {
-      const map = await loadProfiles();
-      await loadChannels(map);
-    })();
-    const ch = supabase.channel('chat-global')
+    void refreshChatState();
+    const ch = supabase.channel(`chat-${user.id}`)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' }, async (payload) => {
         const msg = payload.new as Message;
-        setMessages(prev => {
-          if (msg.channel_id !== activeIdRef.current) return prev;
-          if (prev.some(p => p.id === msg.id)) return prev;
-          return [...prev, msg];
-        });
-        // refresh sidebar preview/unread
+        if (msg.channel_id === activeIdRef.current) {
+          setMessages(prev => {
+            if (prev.some(p => p.id === msg.id)) return prev;
+            return [...prev, msg];
+          });
+          setTimeout(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight }), 50);
+        }
         setChannels(prev => prev.map(c => c.id === msg.channel_id ? {
           ...c,
           last_message: msg.content,
@@ -149,13 +154,28 @@ export default function TeamChat() {
           unread: msg.channel_id === activeIdRef.current || msg.sender_id === user.id ? c.unread : c.unread + 1,
         } : c));
         if (msg.channel_id === activeIdRef.current) {
-          setTimeout(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight }), 50);
           await supabase.from('chat_channel_members').update({ last_read_at: new Date().toISOString() })
             .eq('channel_id', msg.channel_id).eq('user_id', user.id);
         }
       })
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_channel_members' }, () => {
+        void refreshChatState(activeIdRef.current || undefined);
+      })
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'chat_channel_members' }, () => {
+        void refreshChatState(activeIdRef.current || undefined);
+      })
       .subscribe();
-    return () => { supabase.removeChannel(ch); };
+
+    const poll = window.setInterval(() => {
+      if (activeIdRef.current) {
+        void loadMessages(activeIdRef.current);
+      }
+    }, 3000);
+
+    return () => {
+      window.clearInterval(poll);
+      supabase.removeChannel(ch);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
@@ -183,12 +203,12 @@ export default function TeamChat() {
       setInput(content);
       return;
     }
-    // Replace optimistic row with the real one (in case realtime is slow / drops)
     setMessages(prev => {
       const without = prev.filter(m => m.id !== tempId);
       if (without.some(p => p.id === (data as any).id)) return without;
       return [...without, data as any];
     });
+    await refreshChatState(activeId);
   };
 
   return (
