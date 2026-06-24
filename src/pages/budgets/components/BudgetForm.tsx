@@ -2,7 +2,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -12,14 +11,13 @@ interface BudgetFormProps {
   open: boolean;
   onClose: () => void;
   onSuccess?: () => void;
+  projectId?: string;
 }
 
 const CURRENCIES = ['NGN', 'USD', 'GBP', 'EUR'];
 
-export default function BudgetForm({ open, onClose, onSuccess }: BudgetFormProps) {
+export default function BudgetForm({ open, onClose, onSuccess, projectId }: BudgetFormProps) {
   const { user } = useAuth();
-  const [projects, setProjects] = useState<any[]>([]);
-  const [staff, setStaff] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     project_id: '',
@@ -32,15 +30,8 @@ export default function BudgetForm({ open, onClose, onSuccess }: BudgetFormProps
 
   useEffect(() => {
     if (!open) return;
-    (async () => {
-      const [{ data: projs }, { data: stf }] = await Promise.all([
-        supabase.from('projects').select('id, name').order('name'),
-        supabase.from('user_profiles').select('user_id, full_name').order('full_name'),
-      ]);
-      setProjects(projs || []);
-      setStaff(stf || []);
-    })();
-  }, [open]);
+    setFormData(prev => ({ ...prev, project_id: projectId || prev.project_id }));
+  }, [open, projectId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -91,12 +82,11 @@ export default function BudgetForm({ open, onClose, onSuccess }: BudgetFormProps
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <Label>Project</Label>
-            <Select value={formData.project_id} onValueChange={(v) => setFormData({ ...formData, project_id: v })}>
-              <SelectTrigger><SelectValue placeholder="Select project" /></SelectTrigger>
-              <SelectContent>
-                {projects.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
-              </SelectContent>
-            </Select>
+            <Input
+              value={formData.project_id}
+              onChange={(e) => setFormData({ ...formData, project_id: e.target.value })}
+              placeholder="Project ID"
+            />
           </div>
 
           <div>
@@ -122,21 +112,19 @@ export default function BudgetForm({ open, onClose, onSuccess }: BudgetFormProps
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label>Responsible</Label>
-              <Select value={formData.responsible_id} onValueChange={(v) => setFormData({ ...formData, responsible_id: v })}>
-                <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
-                <SelectContent>
-                  {staff.map(s => <SelectItem key={s.user_id} value={s.user_id}>{s.full_name}</SelectItem>)}
-                </SelectContent>
-              </Select>
+              <Input
+                value={formData.responsible_id}
+                onChange={(e) => setFormData({ ...formData, responsible_id: e.target.value })}
+                placeholder="User or staff name"
+              />
             </div>
             <div>
               <Label>Currency</Label>
-              <Select value={formData.currency} onValueChange={(v) => setFormData({ ...formData, currency: v })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {CURRENCIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                </SelectContent>
-              </Select>
+              <Input
+                value={formData.currency}
+                onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
+                placeholder="Currency"
+              />
             </div>
           </div>
 

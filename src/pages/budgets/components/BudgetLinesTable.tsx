@@ -20,11 +20,13 @@ interface Props {
   budgetId: string;
   readOnly?: boolean;
   onChange?: () => void;
+  submitSignal?: number;
 }
 
-export function BudgetLinesTable({ budgetId, readOnly, onChange }: Props) {
+export function BudgetLinesTable({ budgetId, readOnly, onChange, submitSignal = 0 }: Props) {
   const [lines, setLines] = useState<BudgetLine[]>([]);
   const [loading, setLoading] = useState(true);
+  const [lastSubmittedSignal, setLastSubmittedSignal] = useState(0);
 
   const fetchLines = useCallback(async () => {
     setLoading(true);
@@ -56,6 +58,42 @@ export function BudgetLinesTable({ budgetId, readOnly, onChange }: Props) {
   const updateField = (id: string, field: keyof BudgetLine, value: any) => {
     setLines(prev => prev.map(l => (l.id === id ? { ...l, [field]: value } : l)));
   };
+
+  const persistLines = useCallback(async (payload: BudgetLine[]) => {
+    for (const line of payload) {
+      if (line.id) {
+        const { error } = await supabase
+          .from('budget_lines')
+          .update({
+            category: line.category,
+            description: line.description,
+            planned_amount: line.planned_amount,
+            actual_expenditure: line.actual_expenditure,
+          } as any)
+          .eq('id', line.id);
+        if (error) return toast.error(error.message);
+      } else {
+        const { error } = await supabase
+          .from('budget_lines')
+          .insert({
+            budget_id: budgetId,
+            category: line.category,
+            description: line.description,
+            planned_amount: line.planned_amount,
+            actual_expenditure: line.actual_expenditure,
+          } as any);
+        if (error) return toast.error(error.message);
+      }
+    }
+    onChange?.();
+  }, [budgetId, onChange]);
+
+  useEffect(() => {
+    if (submitSignal > 0 && submitSignal !== lastSubmittedSignal) {
+      void persistLines(lines);
+      setLastSubmittedSignal(submitSignal);
+    }
+  }, [lastSubmittedSignal, lines, persistLines, submitSignal]);
 
   const saveLine = async (line: BudgetLine, field: keyof BudgetLine) => {
     const value = line[field];

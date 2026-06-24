@@ -14,20 +14,24 @@ import { ArrowLeft, Save, Plus, Trash2, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatCurrency, stateLabels, stateColors } from '@/lib/format';
 import type { Tables } from '@/integrations/supabase/types';
+import BudgetForm from '@/pages/budgets/components/BudgetForm';
+import BudgetLinesTable from '@/pages/budgets/components/BudgetLinesTable';
+import { calculateBudgetSummary } from './budgetUtils';
 
 type Project = Tables<'projects'>;
-type Product = Tables<'products'>;
 
-interface CostLine {
+type CostLine = {
   id?: string;
   job_type: string;
   description: string;
+  material_name: string;
+  worker_name: string;
   product_id: string | null;
   quantity: number;
   unit_price: number;
   total_cost: number;
   isNew?: boolean;
-}
+};
 
 const stateFlow = ['draft', 'confirmed', 'budget_validated', 'approved', 'done'];
 
@@ -38,7 +42,6 @@ export default function JobCostSheetForm() {
   const isNew = !id || id === 'new';
 
   const [projects, setProjects] = useState<Project[]>([]);
-  const [products, setProducts] = useState<Product[]>([]);
   const [sheetId, setSheetId] = useState('');
   const [projectId, setProjectId] = useState('');
   const [state, setState] = useState('draft');
@@ -46,14 +49,47 @@ export default function JobCostSheetForm() {
   const [lines, setLines] = useState<CostLine[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [budget, setBudget] = useState<any>(null);
+  const [budgetLines, setBudgetLines] = useState<any[]>([]);
+  const [budgetLoading, setBudgetLoading] = useState(false);
+  const [showBudgetDialog, setShowBudgetDialog] = useState(false);
+  const [budgetSubmitSignal, setBudgetSubmitSignal] = useState(0);
 
   const fetchRefs = useCallback(async () => {
-    const [pRes, prRes] = await Promise.all([
-      supabase.from('projects').select('*').order('name'),
-      supabase.from('products').select('*').order('name'),
-    ]);
-    setProjects(pRes.data ?? []);
-    setProducts(prRes.data ?? []);
+    const { data } = await supabase.from('projects').select('*').order('name');
+    setProjects(data ?? []);
+  }, []);
+
+  const fetchBudgetForProject = useCallback(async (selectedProjectId: string) => {
+    if (!selectedProjectId) {
+      setBudget(null);
+      setBudgetLines([]);
+      return;
+    }
+
+    setBudgetLoading(true);
+    const { data: budgetData } = await supabase
+      .from('budgets')
+      .select('*')
+      .eq('project_id', selectedProjectId)
+      .is('deleted_at', null)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (budgetData) {
+      setBudget(budgetData);
+      const { data: linesData } = await supabase
+        .from('budget_lines')
+        .select('*')
+        .eq('budget_id', budgetData.id)
+        .order('created_at', { ascending: true });
+      setBudgetLines(linesData ?? []);
+    } else {
+      setBudget(null);
+      setBudgetLines([]);
+    }
+    setBudgetLoading(false);
   }, []);
 
   useEffect(() => {
@@ -63,7 +99,7 @@ export default function JobCostSheetForm() {
         const { data: sheet } = await supabase.from('job_cost_sheets').select('*').eq('id', id).single();
         if (!sheet) { toast.error('Cost sheet not found'); navigate('/job-cost-sheets'); return; }
         setSheetId(sheet.id);
-        setSheetName(sheet.name);
+        setSheetName(sheet.name || 'Job Cost Sheet');
         setProjectId(sheet.project_id || '');
         setState(sheet.state);
 
@@ -77,6 +113,8 @@ export default function JobCostSheetForm() {
             id: l.id,
             job_type: l.job_type,
             description: l.description || '',
+            material_name: l.product || '',
+            worker_name: (l as any).worker_name || '',
             product_id: l.product_id,
             quantity: l.quantity,
             unit_price: l.unit_price,
@@ -88,12 +126,18 @@ export default function JobCostSheetForm() {
     } else {
       setLoading(false);
     }
-  }, [id]);
+  }, [fetchRefs, id, isNew, navigate]);
+
+  useEffect(() => {
+    void fetchBudgetForProject(projectId);
+  }, [fetchBudgetForProject, projectId]);
 
   const addLine = (jobType: string) => {
     setLines(prev => [...prev, {
       job_type: jobType,
       description: '',
+      material_name: '',
+      worker_name: '',
       product_id: null,
       quantity: 1,
       unit_price: 0,
@@ -106,10 +150,6 @@ export default function JobCostSheetForm() {
     setLines(prev => {
       const updated = [...prev];
       (updated[index] as any)[field] = value;
-      if (field === 'product_id' && value) {
-        const prod = products.find(p => p.id === value);
-        if (prod) updated[index].unit_price = prod.standard_price;
-      }
       updated[index].total_cost = updated[index].quantity * updated[index].unit_price;
       return updated;
     });
@@ -125,6 +165,7 @@ export default function JobCostSheetForm() {
 
   const totalForType = (type: string) => lines.filter(l => l.job_type === type).reduce((s, l) => s + l.total_cost, 0);
   const grandTotal = lines.reduce((s, l) => s + l.total_cost, 0);
+  const budgetSummary = calculateBudgetSummary(budgetLines);
 
   const handleSave = async () => {
     if (!projectId) { toast.error('Please select a project'); return; }
@@ -140,7 +181,7 @@ export default function JobCostSheetForm() {
         if (error) throw error;
         currentSheetId = data.id;
         setSheetId(data.id);
-        setSheetName(data.name);
+        setSheetName(data.name || 'Job Cost Sheet');
       } else {
         const { error } = await supabase
           .from('job_cost_sheets')
@@ -149,27 +190,26 @@ export default function JobCostSheetForm() {
         if (error) throw error;
       }
 
-      // Save lines
       for (const line of lines) {
+        const payload = {
+          job_cost_sheet_id: currentSheetId,
+          job_type: line.job_type,
+          description: line.description || null,
+          product: line.material_name || null,
+          product_id: line.product_id || null,
+          quantity: line.quantity,
+          unit_price: line.unit_price,
+          worker_name: line.worker_name || null,
+        } as any;
+
         if (line.isNew || !line.id) {
-          await supabase.from('job_cost_lines').insert({
-            job_cost_sheet_id: currentSheetId,
-            job_type: line.job_type,
-            description: line.description || null,
-            product_id: line.product_id || null,
-            quantity: line.quantity,
-            unit_price: line.unit_price,
-          });
+          await supabase.from('job_cost_lines').insert(payload);
         } else {
-          await supabase.from('job_cost_lines').update({
-            description: line.description || null,
-            product_id: line.product_id || null,
-            quantity: line.quantity,
-            unit_price: line.unit_price,
-          }).eq('id', line.id);
+          await supabase.from('job_cost_lines').update(payload).eq('id', line.id);
         }
       }
 
+      setBudgetSubmitSignal(prev => prev + 1);
       toast.success(isNew ? 'Cost sheet created' : 'Cost sheet updated');
       if (isNew) navigate(`/job-cost-sheets/${currentSheetId}`, { replace: true });
     } catch (err: any) {
@@ -187,7 +227,6 @@ export default function JobCostSheetForm() {
     if (error) { toast.error(error.message); return; }
     setState(nextState);
     toast.success(`State changed to ${stateLabels[nextState]}`);
-    // AI: smart budget alert when sheet is approved/done
     if (projectId && (nextState === 'approved' || nextState === 'done')) {
       const { checkProjectBudgetAlert } = await import('@/lib/notifications');
       checkProjectBudgetAlert(projectId);
@@ -215,7 +254,8 @@ export default function JobCostSheetForm() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  {jobType === 'material' && <TableHead>Product</TableHead>}
+                  {jobType === 'material' && <TableHead>Material</TableHead>}
+                  {jobType === 'labour' && <TableHead>Worker Name</TableHead>}
                   <TableHead>Description</TableHead>
                   <TableHead className="w-24">Qty</TableHead>
                   <TableHead className="w-32">Unit Price (₦)</TableHead>
@@ -228,14 +268,36 @@ export default function JobCostSheetForm() {
                   <TableRow key={line._index}>
                     {jobType === 'material' && (
                       <TableCell>
-                        <Select value={line.product_id || ''} onValueChange={v => updateLine(line._index, 'product_id', v)}>
-                          <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Select product" /></SelectTrigger>
-                          <SelectContent>
-                            {products.map(p => (
-                              <SelectItem key={p.id} value={p.id}>{p.name} — {formatCurrency(p.standard_price)}/{p.unit_of_measure}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <Input
+                          className="h-8 text-xs"
+                          value={line.material_name}
+                          onChange={e => updateLine(line._index, 'material_name', e.target.value)}
+                          onBlur={async (e) => {
+                            if (jobType !== 'material' || line.unit_price > 0 || !e.target.value.trim()) return;
+                            const { data } = await supabase
+                              .from('materials')
+                              .select('unit_cost, name')
+                              .ilike('name', `%${e.target.value.trim()}%`)
+                              .is('deleted_at', null)
+                              .limit(1)
+                              .maybeSingle();
+                            if (data && Number(data.unit_cost) > 0) {
+                              updateLine(line._index, 'unit_price', Number(data.unit_cost));
+                              toast.success(`Auto-filled cost from "${data.name}"`);
+                            }
+                          }}
+                          placeholder="Material"
+                        />
+                      </TableCell>
+                    )}
+                    {jobType === 'labour' && (
+                      <TableCell>
+                        <Input
+                          className="h-8 text-xs"
+                          value={line.worker_name}
+                          onChange={e => updateLine(line._index, 'worker_name', e.target.value)}
+                          placeholder="Worker name"
+                        />
                       </TableCell>
                     )}
                     <TableCell>
@@ -243,21 +305,7 @@ export default function JobCostSheetForm() {
                         className="h-8 text-xs"
                         value={line.description}
                         onChange={e => updateLine(line._index, 'description', e.target.value)}
-                        onBlur={async (e) => {
-                          if (jobType !== 'material' || line.unit_price > 0 || !e.target.value.trim()) return;
-                          const { data } = await supabase
-                            .from('materials')
-                            .select('unit_cost, name')
-                            .ilike('name', `%${e.target.value.trim()}%`)
-                            .is('deleted_at', null)
-                            .limit(1)
-                            .maybeSingle();
-                          if (data && Number(data.unit_cost) > 0) {
-                            updateLine(line._index, 'unit_price', Number(data.unit_cost));
-                            toast.success(`Auto-filled cost from "${data.name}"`);
-                          }
-                        }}
-                        placeholder="Description (auto-fills from Materials)"
+                        placeholder="Description"
                       />
                     </TableCell>
                     <TableCell>
@@ -275,7 +323,7 @@ export default function JobCostSheetForm() {
                   </TableRow>
                 ))}
                 <TableRow className="bg-muted/30">
-                  <TableCell colSpan={jobType === 'material' ? 4 : 3} className="text-right font-semibold text-sm">Subtotal</TableCell>
+                  <TableCell colSpan={jobType === 'material' ? 4 : jobType === 'labour' ? 5 : 4} className="text-right font-semibold text-sm">Subtotal</TableCell>
                   <TableCell className="text-right font-mono font-semibold">{formatCurrency(totalForType(jobType))}</TableCell>
                   <TableCell />
                 </TableRow>
@@ -336,6 +384,46 @@ export default function JobCostSheetForm() {
       </Card>
 
       <Card className="mb-4">
+        <CardHeader>
+          <CardTitle>Budget</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {budgetLoading ? (
+            <p className="text-sm text-muted-foreground">Loading budget...</p>
+          ) : budget ? (
+            <>
+              <div className="grid gap-4 md:grid-cols-3">
+                <div className="rounded-lg border p-3">
+                  <p className="text-sm text-muted-foreground">Budget</p>
+                  <p className="font-semibold">{budget.budget_number}</p>
+                </div>
+                <div className="rounded-lg border p-3">
+                  <p className="text-sm text-muted-foreground">Total</p>
+                  <p className="font-semibold">{formatCurrency(budgetSummary.total)}</p>
+                </div>
+                <div className="rounded-lg border p-3">
+                  <p className="text-sm text-muted-foreground">Spent</p>
+                  <p className="font-semibold">{formatCurrency(budgetSummary.spent)}</p>
+                </div>
+                <div className="rounded-lg border p-3 md:col-span-3">
+                  <p className="text-sm text-muted-foreground">Remaining</p>
+                  <p className="font-semibold">{formatCurrency(budgetSummary.remaining)}</p>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Button variant="outline" size="sm" onClick={() => navigate(`/budgets/${budget.id}`)}>Open budget</Button>
+              </div>
+            </>
+          ) : (
+            <div className="rounded-lg border border-dashed p-4 text-sm text-muted-foreground">
+              <p>No linked budget found for this project yet.</p>
+              <Button className="mt-3" onClick={() => setShowBudgetDialog(true)}>Create budget</Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card className="mb-4">
         <CardContent className="pt-6">
           <Tabs defaultValue="material">
             <TabsList className="w-full grid grid-cols-3">
@@ -356,11 +444,34 @@ export default function JobCostSheetForm() {
         </CardContent>
       </Card>
 
+      <Card className="mb-4">
+        <CardHeader>
+          <CardTitle>Budget Lines</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {budget ? (
+            <BudgetLinesTable budgetId={budget.id} readOnly={false} submitSignal={budgetSubmitSignal} onChange={() => void fetchBudgetForProject(projectId)} />
+          ) : (
+            <p className="text-sm text-muted-foreground">Create a budget to add budget lines.</p>
+          )}
+        </CardContent>
+      </Card>
+
       <div className="flex justify-end">
         <Button onClick={handleSave} disabled={saving} size="lg">
           <Save className="mr-1 h-4 w-4" /> {saving ? 'Saving...' : 'Save Cost Sheet'}
         </Button>
       </div>
+
+      <BudgetForm
+        open={showBudgetDialog}
+        projectId={projectId || undefined}
+        onClose={() => setShowBudgetDialog(false)}
+        onSuccess={() => {
+          setShowBudgetDialog(false);
+          void fetchBudgetForProject(projectId);
+        }}
+      />
     </div>
   );
 }
