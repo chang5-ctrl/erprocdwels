@@ -2,6 +2,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { FlexibleSelectInput } from '@/components/ui/flexible-select-input';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -120,10 +121,11 @@ export default function BudgetForm({ open, onClose, onSuccess, projectId }: Budg
             </div>
             <div>
               <Label>Currency</Label>
-              <Input
+              <FlexibleSelectInput
                 value={formData.currency}
                 onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
                 placeholder="Currency"
+                options={CURRENCIES}
               />
             </div>
           </div>

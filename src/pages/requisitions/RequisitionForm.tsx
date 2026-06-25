@@ -6,9 +6,9 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { FlexibleSelectInput } from '@/components/ui/flexible-select-input';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ArrowLeft, Plus, Save, Trash2, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -187,28 +187,35 @@ export default function RequisitionForm() {
         <CardContent className="grid gap-3 md:grid-cols-2">
           <div className="grid gap-1.5">
             <Label>Project</Label>
-            <Select value={req.project_id || ''} onValueChange={v => updateHeader({ project_id: v })}>
-              <SelectTrigger><SelectValue placeholder="Select project" /></SelectTrigger>
-              <SelectContent>{projects.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent>
-            </Select>
+            <FlexibleSelectInput
+              value={projects.find((p: any) => p.id === req.project_id)?.name || req.project_id || ''}
+              onChange={(e) => {
+                const selected = projects.find((p: any) => p.name === e.target.value);
+                updateHeader({ project_id: selected?.id || e.target.value });
+              }}
+              placeholder="Select or type project"
+              options={projects.map((p: any) => p.name)}
+            />
           </div>
           <div className="grid gap-1.5">
             <Label>Requisition Type</Label>
-            <Select value={req.requisition_type || ''} onValueChange={v => updateHeader({ requisition_type: v })}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>{TYPES.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
-            </Select>
+            <FlexibleSelectInput value={req.requisition_type || ''} onChange={(e) => updateHeader({ requisition_type: e.target.value })} placeholder="Type or choose" options={TYPES} />
           </div>
           <div className="grid gap-1.5">
             <Label>Employee</Label>
-            <Select value={req.employee_id || ''} onValueChange={v => updateHeader({ employee_id: v })}>
-              <SelectTrigger><SelectValue placeholder="Select staff" /></SelectTrigger>
-              <SelectContent>{staff.map(s => <SelectItem key={s.user_id} value={s.user_id}>{s.full_name}</SelectItem>)}</SelectContent>
-            </Select>
+            <FlexibleSelectInput
+              value={staff.find((s: any) => s.user_id === req.employee_id)?.full_name || req.employee_id || ''}
+              onChange={(e) => {
+                const selected = staff.find((s: any) => s.full_name === e.target.value);
+                updateHeader({ employee_id: selected?.user_id || e.target.value });
+              }}
+              placeholder="Select or type staff"
+              options={staff.map((s: any) => s.full_name)}
+            />
           </div>
           <div className="grid gap-1.5">
             <Label>Department</Label>
-            <Input value={req.department || ''} onChange={e => updateHeader({ department: e.target.value })} />
+            <FlexibleSelectInput value={req.department || ''} onChange={e => updateHeader({ department: e.target.value })} options={['Civil', 'Electrical', 'Mechanical', 'Procurement', 'Admin']} />
           </div>
           <div className="grid gap-1.5">
             <Label>Deadline</Label>
@@ -243,10 +250,10 @@ export default function RequisitionForm() {
                 const total = (Number(l.quantity) || 0) * (Number(l.unit_cost) || 0);
                 return (
                   <TableRow key={idx}>
-                    <TableCell><Input value={l.product} onChange={e => setLines(ls => ls.map((x, i) => i === idx ? { ...x, product: e.target.value } : x))} placeholder="Item name" /></TableCell>
-                    <TableCell><Input type="number" value={l.quantity} onChange={e => setLines(ls => ls.map((x, i) => i === idx ? { ...x, quantity: Number(e.target.value) } : x))} /></TableCell>
-                    <TableCell><Input value={l.uom} onChange={e => setLines(ls => ls.map((x, i) => i === idx ? { ...x, uom: e.target.value } : x))} /></TableCell>
-                    <TableCell><Input type="number" value={l.unit_cost} onChange={e => setLines(ls => ls.map((x, i) => i === idx ? { ...x, unit_cost: Number(e.target.value) } : x))} /></TableCell>
+                    <TableCell><FlexibleSelectInput value={l.product} onChange={e => setLines(ls => ls.map((x, i) => i === idx ? { ...x, product: e.target.value } : x))} placeholder="Item name" options={['Cement', 'Steel', 'Pipes', 'Electrical Cable', 'Paint', 'Labour']} /></TableCell>
+                    <TableCell><Input type="number" inputMode="decimal" value={l.quantity} onChange={e => setLines(ls => ls.map((x, i) => i === idx ? { ...x, quantity: Number(e.target.value) } : x))} /></TableCell>
+                    <TableCell><FlexibleSelectInput value={l.uom} onChange={e => setLines(ls => ls.map((x, i) => i === idx ? { ...x, uom: e.target.value } : x))} placeholder="UoM" options={['unit', 'kg', 'm', 'm2', 'box', 'bag']} /></TableCell>
+                    <TableCell><Input type="number" inputMode="decimal" value={l.unit_cost} onChange={e => setLines(ls => ls.map((x, i) => i === idx ? { ...x, unit_cost: Number(e.target.value) } : x))} /></TableCell>
                     <TableCell className="text-right font-medium">{formatCurrency(total)}</TableCell>
                     <TableCell><Button size="icon" variant="ghost" onClick={() => removeLine(idx)}><Trash2 className="h-4 w-4 text-destructive" /></Button></TableCell>
                   </TableRow>

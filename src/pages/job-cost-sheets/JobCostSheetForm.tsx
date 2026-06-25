@@ -5,11 +5,11 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { FlexibleSelectInput } from '@/components/ui/flexible-select-input';
 import { ArrowLeft, Save, Plus, Trash2, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatCurrency, stateLabels, stateColors } from '@/lib/format';
@@ -272,7 +272,7 @@ export default function JobCostSheetForm() {
                   <TableRow key={line._index}>
                     {jobType === 'material' && (
                       <TableCell>
-                        <Input
+                        <FlexibleSelectInput
                           className="h-8 text-xs"
                           value={line.material_name}
                           onChange={e => updateLine(line._index, 'material_name', e.target.value)}
@@ -291,16 +291,18 @@ export default function JobCostSheetForm() {
                             }
                           }}
                           placeholder="Material"
+                          options={['Cement', 'Steel', 'Sand', 'Tile', 'Paint', 'Electrical Cable']}
                         />
                       </TableCell>
                     )}
                     {jobType === 'labour' && (
                       <TableCell>
-                        <Input
+                        <FlexibleSelectInput
                           className="h-8 text-xs"
                           value={line.worker_name}
                           onChange={e => updateLine(line._index, 'worker_name', e.target.value)}
                           placeholder="Worker name"
+                          options={['Foreman', 'Electrician', 'Plumber', 'Carpenter', 'Painter']}
                         />
                       </TableCell>
                     )}
@@ -313,10 +315,10 @@ export default function JobCostSheetForm() {
                       />
                     </TableCell>
                     <TableCell>
-                      <Input className="h-8 text-xs" type="number" min={0} value={line.quantity} onChange={e => updateLine(line._index, 'quantity', parseFloat(e.target.value) || 0)} />
+                      <Input className="h-8 text-xs" type="number" inputMode="decimal" min={0} value={line.quantity} onChange={e => updateLine(line._index, 'quantity', parseFloat(e.target.value) || 0)} />
                     </TableCell>
                     <TableCell>
-                      <Input className="h-8 text-xs" type="number" min={0} value={line.unit_price} onChange={e => updateLine(line._index, 'unit_price', parseFloat(e.target.value) || 0)} />
+                      <Input className="h-8 text-xs" type="number" inputMode="decimal" min={0} value={line.unit_price} onChange={e => updateLine(line._index, 'unit_price', parseFloat(e.target.value) || 0)} />
                     </TableCell>
                     <TableCell className="text-right font-mono text-xs">{formatCurrency(line.total_cost)}</TableCell>
                     <TableCell>
@@ -368,14 +370,15 @@ export default function JobCostSheetForm() {
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label>Project *</Label>
-              <Select value={projectId} onValueChange={setProjectId}>
-                <SelectTrigger><SelectValue placeholder="Select a project" /></SelectTrigger>
-                <SelectContent>
-                  {projects.map(p => (
-                    <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <FlexibleSelectInput
+                value={projects.find((p) => p.id === projectId)?.name || projectId}
+                onChange={(e) => {
+                  const selected = projects.find((p) => p.name === e.target.value);
+                  setProjectId(selected?.id || e.target.value);
+                }}
+                placeholder="Select or type a project"
+                options={projects.map((p) => p.name)}
+              />
             </div>
             <div className="space-y-2">
               <Label>Grand Total</Label>

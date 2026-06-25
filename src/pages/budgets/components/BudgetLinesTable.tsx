@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
 import { Plus, Trash2 } from 'lucide-react';
+import { FlexibleSelectInput } from '@/components/ui/flexible-select-input';
 import { toast } from 'sonner';
 import { formatCurrency } from '@/lib/format';
 
@@ -143,12 +144,13 @@ export function BudgetLinesTable({ budgetId, readOnly, onChange, submitSignal = 
             return (
               <TableRow key={line.id}>
                 <TableCell>
-                  <Input
+                  <FlexibleSelectInput
                     value={line.category || ''}
                     disabled={readOnly}
                     onChange={(e) => updateField(line.id, 'category', e.target.value)}
                     onBlur={() => saveLine(line, 'category')}
                     placeholder="e.g. Materials"
+                    options={['Materials', 'Labour', 'Equipment', 'Subcontractors', 'Overheads']}
                   />
                 </TableCell>
                 <TableCell>
@@ -157,6 +159,7 @@ export function BudgetLinesTable({ budgetId, readOnly, onChange, submitSignal = 
                     disabled={readOnly}
                     onChange={(e) => updateField(line.id, 'description', e.target.value)}
                     onBlur={() => saveLine(line, 'description')}
+                    placeholder="Enter description"
                   />
                 </TableCell>
                 <TableCell className="text-right">
