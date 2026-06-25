@@ -331,12 +331,14 @@ export default function TeamChat() {
 
             <footer className="border-t bg-card p-3">
               <form className="mx-auto flex max-w-3xl gap-2" onSubmit={send}>
-                <Input
+                <textarea
                   value={input}
                   placeholder="Type a message…"
+                  rows={1}
                   onChange={e => setInput(e.target.value)}
                   onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); void send(e as any); } }}
                   disabled={!activeId || sending}
+                  className="min-h-[44px] max-h-32 flex-1 resize-none rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 />
                 <Button type="submit" disabled={!input.trim() || !activeId || sending}>
                   <Send className="h-4 w-4" />

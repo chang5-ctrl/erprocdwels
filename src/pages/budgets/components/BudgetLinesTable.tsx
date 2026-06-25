@@ -46,13 +46,29 @@ export function BudgetLinesTable({ budgetId, readOnly, onChange, submitSignal = 
   }, [fetchLines]);
 
   const addLine = async () => {
+    const tempLine = {
+      id: `temp-${Date.now()}`,
+      budget_id: budgetId,
+      category: null,
+      description: '',
+      planned_amount: 0,
+      actual_expenditure: 0,
+    } as BudgetLine;
+
+    setLines(prev => [...prev, tempLine]);
+
     const { data, error } = await supabase
       .from('budget_lines')
-      .insert({ budget_id: budgetId, category: '', description: '', planned_amount: 0, actual_expenditure: 0 })
+      .insert({ budget_id: budgetId, category: null, description: '', planned_amount: 0, actual_expenditure: 0 })
       .select()
       .single();
-    if (error) return toast.error(error.message);
-    setLines(prev => [...prev, data as any]);
+
+    if (error) {
+      setLines(prev => prev.filter(line => line.id !== tempLine.id));
+      return toast.error(error.message);
+    }
+
+    setLines(prev => prev.map(line => (line.id === tempLine.id ? (data as BudgetLine) : line)));
     onChange?.();
   };
 
@@ -62,11 +78,12 @@ export function BudgetLinesTable({ budgetId, readOnly, onChange, submitSignal = 
 
   const persistLines = useCallback(async (payload: BudgetLine[]) => {
     for (const line of payload) {
+      const normalizedCategory = line.category?.trim() ? line.category.trim() : null;
       if (line.id) {
         const { error } = await supabase
           .from('budget_lines')
           .update({
-            category: line.category,
+            category: normalizedCategory,
             description: line.description,
             planned_amount: line.planned_amount,
             actual_expenditure: line.actual_expenditure,
@@ -78,7 +95,7 @@ export function BudgetLinesTable({ budgetId, readOnly, onChange, submitSignal = 
           .from('budget_lines')
           .insert({
             budget_id: budgetId,
-            category: line.category,
+            category: normalizedCategory,
             description: line.description,
             planned_amount: line.planned_amount,
             actual_expenditure: line.actual_expenditure,
@@ -97,7 +114,7 @@ export function BudgetLinesTable({ budgetId, readOnly, onChange, submitSignal = 
   }, [lastSubmittedSignal, lines, persistLines, submitSignal]);
 
   const saveLine = async (line: BudgetLine, field: keyof BudgetLine) => {
-    const value = line[field];
+    const value = field === 'category' ? (line.category?.trim() ? line.category.trim() : null) : line[field];
     const { error } = await supabase
       .from('budget_lines')
       .update({ [field]: value } as any)
@@ -146,7 +163,6 @@ export function BudgetLinesTable({ budgetId, readOnly, onChange, submitSignal = 
                 <TableCell>
                   <FlexibleSelectInput
                     value={line.category || ''}
-                    disabled={readOnly}
                     onChange={(e) => updateField(line.id, 'category', e.target.value)}
                     onBlur={() => saveLine(line, 'category')}
                     placeholder="e.g. Materials"
@@ -156,7 +172,6 @@ export function BudgetLinesTable({ budgetId, readOnly, onChange, submitSignal = 
                 <TableCell>
                   <Input
                     value={line.description || ''}
-                    disabled={readOnly}
                     onChange={(e) => updateField(line.id, 'description', e.target.value)}
                     onBlur={() => saveLine(line, 'description')}
                     placeholder="Enter description"
@@ -167,7 +182,6 @@ export function BudgetLinesTable({ budgetId, readOnly, onChange, submitSignal = 
                     type="number"
                     className="text-right"
                     value={line.planned_amount}
-                    disabled={readOnly}
                     onChange={(e) => updateField(line.id, 'planned_amount', parseFloat(e.target.value) || 0)}
                     onBlur={() => saveLine(line, 'planned_amount')}
                   />
@@ -177,7 +191,6 @@ export function BudgetLinesTable({ budgetId, readOnly, onChange, submitSignal = 
                     type="number"
                     className="text-right"
                     value={line.actual_expenditure}
-                    disabled={readOnly}
                     onChange={(e) => updateField(line.id, 'actual_expenditure', parseFloat(e.target.value) || 0)}
                     onBlur={() => saveLine(line, 'actual_expenditure')}
                   />
