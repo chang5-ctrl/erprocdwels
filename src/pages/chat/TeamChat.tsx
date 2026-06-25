@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import type { FormEvent } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -44,6 +45,11 @@ const timeShort = (iso?: string) => {
   return d.toLocaleDateString([], { month: 'short', day: 'numeric' });
 };
 
+const timeLong = (iso?: string) => {
+  if (!iso) return '';
+  return new Date(iso).toLocaleString([], { hour: '2-digit', minute: '2-digit', month: 'short', day: 'numeric' });
+};
+
 export default function TeamChat() {
   const { user } = useAuth();
   const [profiles, setProfiles] = useState<Record<string, Profile>>({});
@@ -51,6 +57,7 @@ export default function TeamChat() {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
+  const [sending, setSending] = useState(false);
   const [newDmOpen, setNewDmOpen] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -182,33 +189,47 @@ export default function TeamChat() {
   const activeIdRef = useRef<string | null>(null);
   useEffect(() => { activeIdRef.current = activeId; if (activeId) loadMessages(activeId); }, [activeId]);
 
-  const send = async () => {
-    if (!input.trim() || !activeId || !user) return;
+  const send = async (event?: FormEvent) => {
+    event?.preventDefault();
     const content = input.trim();
+    if (!content || !activeId || !user || sending) return;
+
+    setSending(true);
     setInput('');
-    // Optimistic insert so the sender sees their message immediately
+
     const tempId = `temp-${Date.now()}`;
     const optimistic: Message = {
-      id: tempId, channel_id: activeId, sender_id: user.id,
-      content, created_at: new Date().toISOString(),
+      id: tempId,
+      channel_id: activeId,
+      sender_id: user.id,
+      content,
+      created_at: new Date().toISOString(),
     };
+
     setMessages(prev => [...prev, optimistic]);
     setTimeout(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight }), 30);
+
     const { data, error } = await supabase.from('chat_messages')
       .insert({ channel_id: activeId, sender_id: user.id, content })
-      .select().single();
+      .select('id, channel_id, sender_id, content, created_at')
+      .single();
+
     if (error) {
       setMessages(prev => prev.filter(m => m.id !== tempId));
-      toast.error(error.message);
       setInput(content);
+      toast.error(error.message || 'Unable to send message');
+      setSending(false);
       return;
     }
+
     setMessages(prev => {
       const without = prev.filter(m => m.id !== tempId);
       if (without.some(p => p.id === (data as any).id)) return without;
       return [...without, data as any];
     });
+
     await refreshChatState(activeId);
+    setSending(false);
   };
 
   return (
@@ -291,12 +312,12 @@ export default function TeamChat() {
                       <div className={`max-w-[70%] rounded-2xl px-4 py-2 ${mine
                         ? 'bg-gradient-to-br from-primary to-purple-600 text-primary-foreground rounded-br-sm'
                         : 'bg-muted text-foreground rounded-bl-sm'}`}>
-                        {!mine && active.is_group && (
+                        {!mine && (
                           <p className="mb-0.5 text-[10px] font-medium opacity-70">{sender?.full_name || 'User'}</p>
                         )}
                         <p className="whitespace-pre-wrap break-words text-sm">{m.content}</p>
                         <p className={`mt-1 text-[10px] ${mine ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>
-                          {new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          {timeLong(m.created_at)}
                         </p>
                       </div>
                     </div>
@@ -309,17 +330,18 @@ export default function TeamChat() {
             </div>
 
             <footer className="border-t bg-card p-3">
-              <div className="mx-auto flex max-w-3xl gap-2">
+              <form className="mx-auto flex max-w-3xl gap-2" onSubmit={send}>
                 <Input
                   value={input}
                   placeholder="Type a message…"
                   onChange={e => setInput(e.target.value)}
-                  onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }}
+                  onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); void send(e as any); } }}
+                  disabled={!activeId || sending}
                 />
-                <Button onClick={send} disabled={!input.trim()}>
+                <Button type="submit" disabled={!input.trim() || !activeId || sending}>
                   <Send className="h-4 w-4" />
                 </Button>
-              </div>
+              </form>
             </footer>
           </>
         )}
