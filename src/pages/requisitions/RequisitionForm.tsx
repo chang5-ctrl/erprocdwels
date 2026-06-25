@@ -56,6 +56,7 @@ export default function RequisitionForm() {
   const [lines, setLines] = useState<Line[]>([]);
   const [projects, setProjects] = useState<any[]>([]);
   const [staff, setStaff] = useState<any[]>([]);
+  const [materials, setMaterials] = useState<any[]>([]);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -78,6 +79,7 @@ export default function RequisitionForm() {
     load();
     supabase.from('projects').select('id, name').is('deleted_at', null).order('name').then(({ data }) => setProjects(data ?? []));
     supabase.from('user_profiles').select('user_id, full_name, job_title').is('deleted_at', null).order('full_name').then(({ data }) => setStaff(data ?? []));
+    supabase.from('materials').select('id, name, uom, unit_cost').is('deleted_at', null).order('name').then(({ data }) => setMaterials(data ?? []));
   }, [id]);
 
   const totalAmount = useMemo(() =>
@@ -87,6 +89,26 @@ export default function RequisitionForm() {
   const updateHeader = (patch: Partial<any>) => setReq((r: any) => ({ ...r, ...patch }));
 
   const addLine = () => setLines(ls => [...ls, { product: '', quantity: 1, uom: 'unit', unit_cost: 0 }]);
+
+  const applyMaterialLookup = async (value: string, idx: number) => {
+    const trimmed = value.trim();
+    if (!trimmed) return;
+    const { data } = await supabase
+      .from('materials')
+      .select('id, name, uom, unit_cost')
+      .ilike('name', `%${trimmed}%`)
+      .is('deleted_at', null)
+      .limit(5);
+    const match = data?.find((m: any) => m.name.toLowerCase() === trimmed.toLowerCase()) ?? data?.[0];
+    if (!match) return;
+    setLines(ls => ls.map((x, i) => i === idx ? {
+      ...x,
+      product: match.name,
+      uom: match.uom || x.uom,
+      unit_cost: Number(match.unit_cost) || x.unit_cost,
+    } : x));
+  };
+
   const removeLine = async (idx: number) => {
     const l = lines[idx];
     if (l.id) await (supabase as any).from('requisition_lines').update({ deleted_at: new Date().toISOString() }).eq('id', l.id);
@@ -250,7 +272,15 @@ export default function RequisitionForm() {
                 const total = (Number(l.quantity) || 0) * (Number(l.unit_cost) || 0);
                 return (
                   <TableRow key={idx}>
-                    <TableCell><FlexibleSelectInput value={l.product} onChange={e => setLines(ls => ls.map((x, i) => i === idx ? { ...x, product: e.target.value } : x))} placeholder="Item name" options={['Cement', 'Steel', 'Pipes', 'Electrical Cable', 'Paint', 'Labour']} /></TableCell>
+                    <TableCell>
+                      <FlexibleSelectInput
+                        value={l.product}
+                        onChange={e => setLines(ls => ls.map((x, i) => i === idx ? { ...x, product: e.target.value } : x))}
+                        onBlur={e => void applyMaterialLookup(e.target.value, idx)}
+                        placeholder="Type or search material"
+                        options={materials.map((m: any) => m.name)}
+                      />
+                    </TableCell>
                     <TableCell><Input type="number" inputMode="decimal" value={l.quantity} onChange={e => setLines(ls => ls.map((x, i) => i === idx ? { ...x, quantity: Number(e.target.value) } : x))} /></TableCell>
                     <TableCell><FlexibleSelectInput value={l.uom} onChange={e => setLines(ls => ls.map((x, i) => i === idx ? { ...x, uom: e.target.value } : x))} placeholder="UoM" options={['unit', 'kg', 'm', 'm2', 'box', 'bag']} /></TableCell>
                     <TableCell><Input type="number" inputMode="decimal" value={l.unit_cost} onChange={e => setLines(ls => ls.map((x, i) => i === idx ? { ...x, unit_cost: Number(e.target.value) } : x))} /></TableCell>

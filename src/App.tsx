@@ -17,8 +17,6 @@ import RecentlyDeleted from "@/pages/admin/RecentlyDeleted";
 import SupplierList from "@/pages/suppliers/SupplierList";
 import DocumentList from "@/pages/documents/DocumentList";
 import TeamChat from "@/pages/chat/TeamChat";
-import BudgetList from "@/pages/budgets/BudgetList";
-import BudgetDetail from "@/pages/budgets/BudgetDetail";
 import ProjectManagerDashboard from "@/pages/dashboards/ProjectManagerDashboard";
 import SiteManagerDashboard from "@/pages/dashboards/SiteManagerDashboard";
 import AccountantDashboard from "@/pages/dashboards/AccountantDashboard";
@@ -28,7 +26,6 @@ import DSRForm from "@/pages/dsr/DSRForm";
 import VariationList from "@/pages/variations/VariationList";
 import VariationForm from "@/pages/variations/VariationForm";
 import MilestoneList from "@/pages/milestones/MilestoneList";
-import MaterialList from "@/pages/materials/MaterialList";
 import RequisitionList from "@/pages/requisitions/RequisitionList";
 import RequisitionForm from "@/pages/requisitions/RequisitionForm";
 import NotFound from "./pages/NotFound.tsx";
@@ -53,8 +50,6 @@ const App = () => (
               <Route path="suppliers" element={<SupplierList />} />
               <Route path="documents" element={<DocumentList />} />
               <Route path="chat" element={<TeamChat />} />
-              <Route path="budgets" element={<BudgetList />} />
-              <Route path="budgets/:id" element={<BudgetDetail />} />
               <Route path="dashboard/pm" element={<ProjectManagerDashboard />} />
               <Route path="dashboard/site" element={<SiteManagerDashboard />} />
               <Route path="dashboard/accounts" element={<AccountantDashboard />} />
@@ -64,7 +59,6 @@ const App = () => (
               <Route path="variations" element={<VariationList />} />
               <Route path="variations/:id" element={<VariationForm />} />
               <Route path="milestones" element={<MilestoneList />} />
-              <Route path="materials" element={<MaterialList />} />
               <Route path="requisitions" element={<RequisitionList />} />
               <Route path="requisitions/:id" element={<RequisitionForm />} />
               <Route path="admin" element={<AdminDashboard />} />
