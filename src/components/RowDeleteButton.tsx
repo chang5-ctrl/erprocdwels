@@ -23,7 +23,7 @@ export default function RowDeleteButton({ table, id, label, onDeleted, size = 'i
     const { error } = await softDelete({ table, id, label });
     setBusy(false);
     setOpen(false);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     toast.success(`${label ?? 'Item'} moved to Recently Deleted`);
     onDeleted?.();
   };
