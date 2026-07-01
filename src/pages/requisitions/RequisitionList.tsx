@@ -200,24 +200,36 @@ export default function RequisitionList() {
           <div className="grid gap-3">
             <div className="grid gap-1.5">
               <Label>Project</Label>
-              <Select value={form.project_id} onValueChange={v => setForm({ ...form, project_id: v })}>
-                <SelectTrigger><SelectValue placeholder="Select project" /></SelectTrigger>
-                <SelectContent>{projects.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent>
-              </Select>
+              <FlexibleSelectInput
+                value={projects.find(p => p.id === form.project_id)?.name || form.project_id || ''}
+                onChange={e => {
+                  const sel = projects.find(p => p.name === e.target.value);
+                  setForm({ ...form, project_id: sel?.id || e.target.value });
+                }}
+                placeholder="Select or type project"
+                options={projects.map(p => p.name)}
+              />
             </div>
             <div className="grid gap-1.5">
               <Label>Requisition Type</Label>
-              <Select value={form.requisition_type} onValueChange={v => setForm({ ...form, requisition_type: v })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>{TYPES.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
-              </Select>
+              <FlexibleSelectInput
+                value={form.requisition_type}
+                onChange={e => setForm({ ...form, requisition_type: e.target.value })}
+                placeholder="Type or choose"
+                options={TYPES}
+              />
             </div>
             <div className="grid gap-1.5">
               <Label>Employee</Label>
-              <Select value={form.employee_id} onValueChange={v => setForm({ ...form, employee_id: v })}>
-                <SelectTrigger><SelectValue placeholder="Select staff" /></SelectTrigger>
-                <SelectContent>{staff.map(s => <SelectItem key={s.user_id} value={s.user_id}>{s.full_name}{s.job_title ? ` — ${s.job_title}` : ''}</SelectItem>)}</SelectContent>
-              </Select>
+              <FlexibleSelectInput
+                value={staff.find(s => s.user_id === form.employee_id)?.full_name || form.employee_id || ''}
+                onChange={e => {
+                  const sel = staff.find(s => s.full_name === e.target.value);
+                  setForm({ ...form, employee_id: sel?.user_id || e.target.value });
+                }}
+                placeholder="Select or type staff"
+                options={staff.map(s => s.full_name)}
+              />
             </div>
             <div className="grid gap-1.5">
               <Label>Department</Label>
