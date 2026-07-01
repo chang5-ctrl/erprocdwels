@@ -127,7 +127,7 @@ export default function JobCostSheetList() {
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Amount</TableHead>
                 <TableHead>Date</TableHead>
-                {caps.approveCostSheet && <TableHead className="w-40 text-right">Actions</TableHead>}
+                <TableHead className="w-48 text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
