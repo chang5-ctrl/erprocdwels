@@ -124,10 +124,10 @@ export default function BudgetList() {
             </TableHeader>
             <TableBody>
               {loading && (
-                <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">Loading...</TableCell></TableRow>
+                <TableRow><TableCell colSpan={9} className="text-center py-8 text-muted-foreground">Loading...</TableCell></TableRow>
               )}
               {!loading && filteredBudgets.length === 0 && (
-                <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">No budgets found.</TableCell></TableRow>
+                <TableRow><TableCell colSpan={9} className="text-center py-8 text-muted-foreground">No budgets yet. Click "New Budget" to add one.</TableCell></TableRow>
               )}
               {filteredBudgets.map(budget => {
                 const agg = linesByBudget[budget.id] || { planned: 0, spent: 0 };
@@ -145,6 +145,9 @@ export default function BudgetList() {
                     <TableCell className="text-right font-mono">{formatCurrency(agg.planned)}</TableCell>
                     <TableCell className="text-right font-mono">{formatCurrency(agg.spent)}</TableCell>
                     <TableCell><Badge variant={statusVariant(budget.status)}>{budget.status}</Badge></TableCell>
+                    <TableCell className="text-right">
+                      <RowDeleteButton table="budgets" id={budget.id} label={budget.budget_number} onDeleted={fetchAll} />
+                    </TableCell>
                   </TableRow>
                 );
               })}
