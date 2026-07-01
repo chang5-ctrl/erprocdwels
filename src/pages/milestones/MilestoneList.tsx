@@ -164,7 +164,12 @@ export default function MilestoneList({ projectId, embedded = false }: { project
                   <TableCell>{r.actual_start ? formatDate(r.actual_start) : '—'} → {r.actual_end ? formatDate(r.actual_end) : '—'}</TableCell>
                   <TableCell className="w-24"><Progress value={r.pct_complete ?? 0} className="h-2" /><div className="text-xs mt-1">{r.pct_complete ?? 0}%</div></TableCell>
                   <TableCell><Badge variant="secondary" className={STATUS_COLORS[r.status]}>{r.status.replace(/_/g,' ')}</Badge></TableCell>
-                  <TableCell><Button size="icon" variant="ghost" onClick={() => { setEditing(r); setDialogOpen(true); }}><Edit2 className="h-4 w-4" /></Button></TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex justify-end gap-1">
+                      <Button size="icon" variant="ghost" onClick={() => { setEditing(r); setDialogOpen(true); }}><Edit2 className="h-4 w-4" /></Button>
+                      <RowDeleteButton table="milestones" id={r.id} label={r.name} onDeleted={load} />
+                    </div>
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
