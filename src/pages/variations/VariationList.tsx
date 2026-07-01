@@ -123,18 +123,27 @@ export default function VariationList() {
           <DialogHeader><DialogTitle>New Variation Order</DialogTitle></DialogHeader>
           <div className="grid gap-3">
             <Input placeholder="Variation Title" value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} />
-            <Select value={form.project_id} onValueChange={v => setForm({ ...form, project_id: v })}>
-              <SelectTrigger><SelectValue placeholder="Project" /></SelectTrigger>
-              <SelectContent>{projects.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent>
-            </Select>
-            <Select value={form.variation_type} onValueChange={v => setForm({ ...form, variation_type: v })}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>{['Addition','Omission','Substitution','Acceleration'].map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
-            </Select>
-            <Select value={form.priority} onValueChange={v => setForm({ ...form, priority: v })}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>{['High','Medium','Low'].map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
-            </Select>
+            <FlexibleSelectInput
+              value={projects.find(p => p.id === form.project_id)?.name || form.project_id || ''}
+              onChange={e => {
+                const sel = projects.find(p => p.name === e.target.value);
+                setForm({ ...form, project_id: sel?.id || e.target.value });
+              }}
+              placeholder="Select or type project"
+              options={projects.map(p => p.name)}
+            />
+            <FlexibleSelectInput
+              value={form.variation_type}
+              onChange={e => setForm({ ...form, variation_type: e.target.value })}
+              placeholder="Variation type"
+              options={['Addition','Omission','Substitution','Acceleration']}
+            />
+            <FlexibleSelectInput
+              value={form.priority}
+              onChange={e => setForm({ ...form, priority: e.target.value })}
+              placeholder="Priority"
+              options={['High','Medium','Low']}
+            />
           </div>
           <DialogFooter><Button onClick={create}>Create</Button></DialogFooter>
         </DialogContent>
