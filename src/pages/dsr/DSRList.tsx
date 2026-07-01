@@ -106,11 +106,12 @@ export default function DSRList() {
                 <TableHead>Weather</TableHead>
                 <TableHead>Workers</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead className="w-12 text-right"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {loading ? <TableRow><TableCell colSpan={6} className="text-center py-8">Loading…</TableCell></TableRow> :
-               filtered.length === 0 ? <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">No reports yet. Click "New Report" to create your first daily site report.</TableCell></TableRow> :
+              {loading ? <TableRow><TableCell colSpan={7} className="text-center py-8">Loading…</TableCell></TableRow> :
+               filtered.length === 0 ? <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">No reports yet. Click "New Report" to create your first daily site report.</TableCell></TableRow> :
                filtered.map(r => (
                 <TableRow key={r.id} className="cursor-pointer" onClick={() => navigate(`/dsr/${r.id}`)}>
                   <TableCell><Link to={`/dsr/${r.id}`} className="font-medium text-primary hover:underline">{r.dsr_number}</Link></TableCell>
@@ -119,6 +120,9 @@ export default function DSRList() {
                   <TableCell>{r.weather || '—'}</TableCell>
                   <TableCell>{r.tomorrow_workforce ?? '—'}</TableCell>
                   <TableCell><Badge variant="secondary" className={STATUS_COLORS[r.status]}>{r.status}</Badge></TableCell>
+                  <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                    <RowDeleteButton table="daily_site_reports" id={r.id} label={r.dsr_number} onDeleted={load} />
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
