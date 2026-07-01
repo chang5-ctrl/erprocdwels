@@ -107,6 +107,7 @@ export default function ProjectList() {
                 <TableHead>Budget Progress</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Created</TableHead>
+                {caps.createProject && <TableHead className="w-12 text-right"></TableHead>}
               </TableRow>
             </TableHeader>
             <TableBody>
