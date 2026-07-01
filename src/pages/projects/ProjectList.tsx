@@ -141,6 +141,11 @@ export default function ProjectList() {
                       </Badge>
                     </TableCell>
                     <TableCell className="text-muted-foreground">{formatDate(p.created_at)}</TableCell>
+                    {caps.createProject && (
+                      <TableCell className="text-right">
+                        <RowDeleteButton table="projects" id={p.id} label={p.name} onDeleted={fetchProjects} />
+                      </TableCell>
+                    )}
                   </TableRow>
                 );
               })}
