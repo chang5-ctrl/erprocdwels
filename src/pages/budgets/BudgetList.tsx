@@ -119,6 +119,7 @@ export default function BudgetList() {
                 <TableHead className="text-right">Budgeted</TableHead>
                 <TableHead className="text-right">Spent</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead className="w-12 text-right"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
