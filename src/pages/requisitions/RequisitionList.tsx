@@ -182,7 +182,12 @@ export default function RequisitionList() {
                 <TableCell>{r.requisition_type || '—'}</TableCell>
                 <TableCell>{r.deadline ? formatDate(r.deadline) : '—'}</TableCell>
                 <TableCell><Badge variant="secondary" className={STATUS_COLORS[r.status] || ''}>{STATUS_LABELS[r.status] || r.status}</Badge></TableCell>
-                <TableCell className="text-right"><Button size="sm" variant="outline" onClick={(e) => { e.stopPropagation(); navigate(`/requisitions/${r.id}`); }}>Open</Button></TableCell>
+                <TableCell className="text-right">
+                  <div className="flex justify-end gap-1" onClick={(e) => e.stopPropagation()}>
+                    <Button size="sm" variant="outline" onClick={() => navigate(`/requisitions/${r.id}`)}>Open</Button>
+                    <RowDeleteButton table="requisitions" id={r.id} label={r.requisition_number} onDeleted={load} />
+                  </div>
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
