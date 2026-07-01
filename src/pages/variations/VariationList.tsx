@@ -11,6 +11,8 @@ import { formatCurrency, formatDate } from '@/lib/format';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
+import RowDeleteButton from '@/components/RowDeleteButton';
+import { FlexibleSelectInput } from '@/components/ui/flexible-select-input';
 
 const STATUS_COLORS: Record<string, string> = {
   draft: 'bg-muted text-muted-foreground',
