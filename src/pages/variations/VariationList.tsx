@@ -90,10 +90,11 @@ export default function VariationList() {
           <TableHeader><TableRow>
             <TableHead>VO #</TableHead><TableHead>Project</TableHead><TableHead>Title</TableHead><TableHead>Type</TableHead>
             <TableHead>Amount</TableHead><TableHead>Revised Contract</TableHead><TableHead>Status</TableHead><TableHead>Date</TableHead>
+            <TableHead className="w-12 text-right"></TableHead>
           </TableRow></TableHeader>
           <TableBody>
-            {loading ? <TableRow><TableCell colSpan={8} className="text-center py-8">Loading…</TableCell></TableRow> :
-             rows.length === 0 ? <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">No variations yet. Click "New Variation" to track scope changes.</TableCell></TableRow> :
+            {loading ? <TableRow><TableCell colSpan={9} className="text-center py-8">Loading…</TableCell></TableRow> :
+             rows.length === 0 ? <TableRow><TableCell colSpan={9} className="text-center py-8 text-muted-foreground">No variations yet. Click "New Variation" to track scope changes.</TableCell></TableRow> :
              rows.map(r => {
               const amt = lines[r.id] || 0;
               const total = (Number(r.projects?.budget_total) || 0) + amt;
@@ -107,6 +108,9 @@ export default function VariationList() {
                   <TableCell>{formatCurrency(total)}</TableCell>
                   <TableCell><Badge variant="secondary" className={STATUS_COLORS[r.status]}>{r.status.replace(/_/g, ' ')}</Badge></TableCell>
                   <TableCell>{formatDate(r.date_requested)}</TableCell>
+                  <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                    <RowDeleteButton table="variation_orders" id={r.id} label={r.vo_number} onDeleted={load} />
+                  </TableCell>
                 </TableRow>
               );
             })}
