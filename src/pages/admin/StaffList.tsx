@@ -131,6 +131,9 @@ export default function StaffList() {
                     </Badge>
                   </TableCell>
                   <TableCell className="text-muted-foreground text-sm">{formatDate(r.created_at)}</TableCell>
+                  <TableCell className="text-right">
+                    <RowDeleteButton table="user_profiles" id={r.user_id} label={r.full_name ?? undefined} onDeleted={load} />
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
