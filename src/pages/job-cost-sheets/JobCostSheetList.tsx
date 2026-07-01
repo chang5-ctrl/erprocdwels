@@ -12,6 +12,7 @@ import { logActivity } from '@/lib/activity';
 import { capabilitiesFor } from '@/lib/permissions';
 import { toast } from 'sonner';
 import JobCostSheetDialog from './JobCostSheetDialog';
+import RowDeleteButton from '@/components/RowDeleteButton';
 
 interface Sheet {
   id: string;
