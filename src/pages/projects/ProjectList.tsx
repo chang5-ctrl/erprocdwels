@@ -12,6 +12,7 @@ import { formatCurrency, formatDate, statusLabels, statusColors } from '@/lib/fo
 import { cn } from '@/lib/utils';
 import type { Tables } from '@/integrations/supabase/types';
 import ProjectDialog from './ProjectDialog';
+import RowDeleteButton from '@/components/RowDeleteButton';
 
 type Project = Tables<'projects'>;
 const STATUS_TABS = ['all', 'active', 'completed', 'on_hold', 'handover'] as const;
@@ -106,6 +107,7 @@ export default function ProjectList() {
                 <TableHead>Budget Progress</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Created</TableHead>
+                {caps.createProject && <TableHead className="w-12 text-right"></TableHead>}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -139,6 +141,11 @@ export default function ProjectList() {
                       </Badge>
                     </TableCell>
                     <TableCell className="text-muted-foreground">{formatDate(p.created_at)}</TableCell>
+                    {caps.createProject && (
+                      <TableCell className="text-right">
+                        <RowDeleteButton table="projects" id={p.id} label={p.name} onDeleted={fetchProjects} />
+                      </TableCell>
+                    )}
                   </TableRow>
                 );
               })}

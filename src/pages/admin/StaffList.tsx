@@ -12,6 +12,7 @@ import type { Database } from '@/integrations/supabase/types';
 import StaffCreateDialog from '@/pages/admin/StaffCreateDialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
+import RowDeleteButton from '@/components/RowDeleteButton';
 
 type AppRole = Database['public']['Enums']['app_role'];
 
@@ -37,7 +38,7 @@ export default function StaffList() {
   const load = async () => {
     setLoading(true);
     const [{ data: profiles }, { data: roles }] = await Promise.all([
-      supabase.from('user_profiles').select('*').order('created_at', { ascending: false }),
+      supabase.from('user_profiles').select('*').is('deleted_at', null).order('created_at', { ascending: false }),
       supabase.from('user_roles').select('user_id, role'),
     ]);
     const roleMap = new Map((roles ?? []).map(r => [r.user_id, r.role as AppRole]));
@@ -101,6 +102,7 @@ export default function StaffList() {
                 <TableHead>Phone</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Created</TableHead>
+                <TableHead className="w-12 text-right"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -129,6 +131,9 @@ export default function StaffList() {
                     </Badge>
                   </TableCell>
                   <TableCell className="text-muted-foreground text-sm">{formatDate(r.created_at)}</TableCell>
+                  <TableCell className="text-right">
+                    <RowDeleteButton table="user_profiles" id={r.user_id} label={r.full_name ?? undefined} onDeleted={load} />
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>

@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 import { FlexibleSelectInput } from '@/components/ui/flexible-select-input';
 import { ArrowLeft, Save, Plus, Trash2, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
@@ -413,8 +414,21 @@ export default function JobCostSheetForm() {
                   <p className="font-semibold">{formatCurrency(budgetSummary.spent)}</p>
                 </div>
                 <div className="rounded-lg border p-3 md:col-span-3">
-                  <p className="text-sm text-muted-foreground">Remaining</p>
-                  <p className="font-semibold">{formatCurrency(budgetSummary.remaining)}</p>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <p className="text-sm text-muted-foreground">Remaining · % Used</p>
+                    <p className="text-sm font-medium">
+                      {formatCurrency(budgetSummary.remaining)}
+                      {budgetSummary.total > 0 && (
+                        <span className="ml-2 text-muted-foreground">
+                          ({Math.min(100, Math.round((budgetSummary.spent / budgetSummary.total) * 100))}%)
+                        </span>
+                      )}
+                    </p>
+                  </div>
+                  <Progress
+                    value={budgetSummary.total > 0 ? Math.min(100, (budgetSummary.spent / budgetSummary.total) * 100) : 0}
+                    className="h-2"
+                  />
                 </div>
               </div>
               <div className="flex flex-wrap gap-2">

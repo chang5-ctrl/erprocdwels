@@ -11,6 +11,8 @@ import { formatCurrency, formatDate } from '@/lib/format';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
+import RowDeleteButton from '@/components/RowDeleteButton';
+import { FlexibleSelectInput } from '@/components/ui/flexible-select-input';
 
 const STATUS_COLORS: Record<string, string> = {
   draft: 'bg-muted text-muted-foreground',
@@ -88,10 +90,11 @@ export default function VariationList() {
           <TableHeader><TableRow>
             <TableHead>VO #</TableHead><TableHead>Project</TableHead><TableHead>Title</TableHead><TableHead>Type</TableHead>
             <TableHead>Amount</TableHead><TableHead>Revised Contract</TableHead><TableHead>Status</TableHead><TableHead>Date</TableHead>
+            <TableHead className="w-12 text-right"></TableHead>
           </TableRow></TableHeader>
           <TableBody>
-            {loading ? <TableRow><TableCell colSpan={8} className="text-center py-8">Loading…</TableCell></TableRow> :
-             rows.length === 0 ? <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">No variations yet. Click "New Variation" to track scope changes.</TableCell></TableRow> :
+            {loading ? <TableRow><TableCell colSpan={9} className="text-center py-8">Loading…</TableCell></TableRow> :
+             rows.length === 0 ? <TableRow><TableCell colSpan={9} className="text-center py-8 text-muted-foreground">No variations yet. Click "New Variation" to track scope changes.</TableCell></TableRow> :
              rows.map(r => {
               const amt = lines[r.id] || 0;
               const total = (Number(r.projects?.budget_total) || 0) + amt;
@@ -105,6 +108,9 @@ export default function VariationList() {
                   <TableCell>{formatCurrency(total)}</TableCell>
                   <TableCell><Badge variant="secondary" className={STATUS_COLORS[r.status]}>{r.status.replace(/_/g, ' ')}</Badge></TableCell>
                   <TableCell>{formatDate(r.date_requested)}</TableCell>
+                  <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                    <RowDeleteButton table="variation_orders" id={r.id} label={r.vo_number} onDeleted={load} />
+                  </TableCell>
                 </TableRow>
               );
             })}
@@ -117,18 +123,27 @@ export default function VariationList() {
           <DialogHeader><DialogTitle>New Variation Order</DialogTitle></DialogHeader>
           <div className="grid gap-3">
             <Input placeholder="Variation Title" value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} />
-            <Select value={form.project_id} onValueChange={v => setForm({ ...form, project_id: v })}>
-              <SelectTrigger><SelectValue placeholder="Project" /></SelectTrigger>
-              <SelectContent>{projects.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent>
-            </Select>
-            <Select value={form.variation_type} onValueChange={v => setForm({ ...form, variation_type: v })}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>{['Addition','Omission','Substitution','Acceleration'].map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
-            </Select>
-            <Select value={form.priority} onValueChange={v => setForm({ ...form, priority: v })}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>{['High','Medium','Low'].map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
-            </Select>
+            <FlexibleSelectInput
+              value={projects.find(p => p.id === form.project_id)?.name || form.project_id || ''}
+              onChange={e => {
+                const sel = projects.find(p => p.name === e.target.value);
+                setForm({ ...form, project_id: sel?.id || e.target.value });
+              }}
+              placeholder="Select or type project"
+              options={projects.map(p => p.name)}
+            />
+            <FlexibleSelectInput
+              value={form.variation_type}
+              onChange={e => setForm({ ...form, variation_type: e.target.value })}
+              placeholder="Variation type"
+              options={['Addition','Omission','Substitution','Acceleration']}
+            />
+            <FlexibleSelectInput
+              value={form.priority}
+              onChange={e => setForm({ ...form, priority: e.target.value })}
+              placeholder="Priority"
+              options={['High','Medium','Low']}
+            />
           </div>
           <DialogFooter><Button onClick={create}>Create</Button></DialogFooter>
         </DialogContent>
