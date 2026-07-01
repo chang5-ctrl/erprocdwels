@@ -102,6 +102,7 @@ export default function StaffList() {
                 <TableHead>Phone</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Created</TableHead>
+                <TableHead className="w-12 text-right"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
