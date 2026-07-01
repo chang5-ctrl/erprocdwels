@@ -147,20 +147,21 @@ export default function JobCostSheetList() {
                   </TableCell>
                   <TableCell className="text-right font-mono">{formatCurrency(Number(s.amount || s.total_planned_cost || 0))}</TableCell>
                   <TableCell className="text-muted-foreground">{formatDate(s.sheet_date || s.created_at)}</TableCell>
-                  {caps.approveCostSheet && (
-                    <TableCell className="text-right">
-                      {s.status === 'pending' && (
-                        <div className="flex justify-end gap-1">
+                  <TableCell className="text-right">
+                    <div className="flex justify-end gap-1">
+                      {caps.approveCostSheet && s.status === 'pending' && (
+                        <>
                           <Button size="sm" variant="outline" className="h-7 text-emerald-700" onClick={() => decide(s, 'approved')}>
                             <Check className="mr-1 h-3 w-3" /> Approve
                           </Button>
                           <Button size="sm" variant="outline" className="h-7 text-destructive" onClick={() => decide(s, 'rejected')}>
                             <X className="mr-1 h-3 w-3" /> Reject
                           </Button>
-                        </div>
+                        </>
                       )}
-                    </TableCell>
-                  )}
+                      <RowDeleteButton table="job_cost_sheets" id={s.id} label={s.name} onDeleted={fetch} />
+                    </div>
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
