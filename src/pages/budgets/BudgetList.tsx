@@ -9,6 +9,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Plus, Wallet } from 'lucide-react';
 import { formatDate, formatCurrency } from '@/lib/format';
 import BudgetForm from './components/BudgetForm';
+import RowDeleteButton from '@/components/RowDeleteButton';
 
 const STATUSES = ['all', 'draft', 'confirmed', 'approved'] as const;
 type Status = typeof STATUSES[number];
