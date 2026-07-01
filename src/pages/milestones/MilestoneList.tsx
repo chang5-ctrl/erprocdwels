@@ -11,6 +11,7 @@ import { Progress } from '@/components/ui/progress';
 import { Plus, Flag, CheckCircle2, AlertTriangle, Clock, Circle, Edit2 } from 'lucide-react';
 import { formatDate } from '@/lib/format';
 import MilestoneDialog from './MilestoneDialog';
+import RowDeleteButton from '@/components/RowDeleteButton';
 
 const STATUS_COLORS: Record<string, string> = {
   not_started: 'bg-muted text-muted-foreground',
