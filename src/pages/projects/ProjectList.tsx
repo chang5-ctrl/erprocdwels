@@ -12,6 +12,7 @@ import { formatCurrency, formatDate, statusLabels, statusColors } from '@/lib/fo
 import { cn } from '@/lib/utils';
 import type { Tables } from '@/integrations/supabase/types';
 import ProjectDialog from './ProjectDialog';
+import RowDeleteButton from '@/components/RowDeleteButton';
 
 type Project = Tables<'projects'>;
 const STATUS_TABS = ['all', 'active', 'completed', 'on_hold', 'handover'] as const;
