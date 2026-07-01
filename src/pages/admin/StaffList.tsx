@@ -12,6 +12,7 @@ import type { Database } from '@/integrations/supabase/types';
 import StaffCreateDialog from '@/pages/admin/StaffCreateDialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
+import RowDeleteButton from '@/components/RowDeleteButton';
 
 type AppRole = Database['public']['Enums']['app_role'];
 
