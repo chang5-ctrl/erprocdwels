@@ -38,7 +38,7 @@ export default function StaffList() {
   const load = async () => {
     setLoading(true);
     const [{ data: profiles }, { data: roles }] = await Promise.all([
-      supabase.from('user_profiles').select('*').order('created_at', { ascending: false }),
+      supabase.from('user_profiles').select('*').is('deleted_at', null).order('created_at', { ascending: false }),
       supabase.from('user_roles').select('user_id, role'),
     ]);
     const roleMap = new Map((roles ?? []).map(r => [r.user_id, r.role as AppRole]));
